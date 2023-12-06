@@ -1,0 +1,39 @@
+API:
+	Set of defined rule that enable different application to communicate with each other.
+	It's an intermediary layer that process data transfer between systems, ext/
+	example:
+		ecommerce app -> payment button -> API -> if request valid pass the request to payment app 
+		-> generate response and pass response to the API -> give the Response to ecommerce app.
+	Types:
+		- Open API:
+			- open source
+			- can access with http protocol
+			- request and response format.
+		- partner API:
+			- Strtegic business partners
+			- access from public but access only with credentials.
+		- Internal API:
+			- with in a organization
+			- improve productivity and communication across different internal development team.
+		- Composite API:
+			- combine multiple data or service API.
+			- single call can access several endpoint.
+			- useful for microservice architecture.
+	API Protocol:
+		- SOAP(simple object access protocol):
+			- write with XML
+			- send and receive data through SMTP and HTTP.
+			- it make easy to transfer data between apps
+			- run different environment and different language.
+		- XML-RPC(XML-Remote Procedure Call):
+			- Specific XML format to transfer data.
+			- its older than SOAP. but much simpler uses minimum bandwidth
+		- JSON-RPC:
+			- like XML-RPC, instead of XML use JSON.
+		- REST(Representational State Transfer):
+			- Can apply CRUD operation here.
+			- its adhere to certain REST architecture constraints.
+			- Possible to build RESTful APIs with SOAP protocol.
+	
+		
+	

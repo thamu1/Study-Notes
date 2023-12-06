@@ -1,0 +1,58 @@
+# Initialize a new Git repository
+git init
+
+# Clone a repository
+git clone <repository_url>
+
+# Check the status of your working directory
+git status
+
+# Add changes to the staging area
+git add <file(s)>
+
+git config --global --add safe.directory 'D:/thamu/study Album/git'
+
+
+
+# Commit changes
+git commit -m "Your commit message"
+
+# Push changes to a remote repository
+git push <remote> <branch>
+=> git push origin "" 
+
+# Pull changes from a remote repository
+git pull <remote> <branch>
+
+# Fetch changes from a remote repository
+git fetch <remote>
+
+# Create a new branch
+git branch <branch_name>
+
+# Switch to a different branch
+git checkout <branch_name>
+
+# Create and switch to a new branch in one command
+git checkout -b <branch_name>
+
+# Merge changes from one branch into the current branch
+git merge <branch_name>
+
+# View commit history
+git log
+
+# Undo the last commit (soft reset)
+git reset --soft HEAD^
+
+# Undo the last commit and unstage changes (mixed reset)
+git reset HEAD^
+
+# Undo the last commit and discard changes (hard reset)
+git reset --hard HEAD^
+
+# Show changes between commits or branches
+git diff <commit/branch_1> <commit/branch_2>
+
+# Create a tag for a specific commit
+git tag <tag_name> <commit_hash>
