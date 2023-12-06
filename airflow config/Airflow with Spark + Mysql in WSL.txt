@@ -1,0 +1,104 @@
+1. install java:
+	- sudo apt install default-jdk
+	- sudo apt install default-jre
+	- update-alternatives --config java
+	- sudo nano /etc/environment : set the following,
+		JAVA_HOME="JAVA_HOME="/lib/jvm/java-11-openjdk-amd64/bin/java"
+	- source /etc/environment
+	- echo $JAVA_HOME
+	
+2. Spark:
+	- install spark tar file.
+		https://spark.apache.org/downloads.html
+	- extract into ubuntu/usr/lib/spark.
+	- cd spark -> vi .bashrc 
+	- download JDBC driver and moved to jars file.
+	- set the following,
+		export SPARK_HOME=/user/lib/spark
+		export PATH=＄SPARK_HOME/bin:＄PATH
+	- click "esc" and "ctrl+z"
+	- test: spark-shell -> go to UI 
+	
+3. Scala:
+	- sudo apt-get install scala
+		
+4. Airflow:
+	- set environment variable:
+		- admin > variables > JAVA_HOME = "" and SPARK_HOME = ""
+	- use python operator to run the spark file.
+	- eg:
+		import subprocess
+		def sparkRun():
+			cmd = "/usr/lib/spark/bin/spark-submit --master local[*] '/usr/lib/spark/python/pyspark/Pyspark Practice/sparkTry.py'"
+			process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,text=True)
+			stdout, stderr = process.communicate()
+			if process.returncode == 0:
+				print("Execution successful!")
+				print("Output:")
+				print(stdout)
+			else:
+				print("Execution failed!")
+				print("Error message:")
+				print(stderr)
+	Py file:
+	from pyspark import SparkContext
+	from pyspark.sql import SparkSession
+	
+	ss = SparkSession.builder.appName('Basic').master('local[*]').getOrCreate()
+	
+	df = ss.read.format("jdbc")\
+		.option("url", "jdbc:mysql://127.0.0.1:3306/world")\
+		.option("dbtable", "world.city")\
+		.option("user", "root")\
+		.option("password", "Mysql.08")\
+		.load()
+
+	df.createOrReplaceTempView("city")
+	all = ss.sql("select * from city limit 5")
+	result = all.collect()
+	print(result)
+	
+	
+	
+Airflow:
+
+	core components:
+		- webserver:
+			- It is an UI written in flask that help to 
+			- monitor and manage the workflow.
+		- scheduler:
+			- It programatically shedule, monitor, manage workflow
+			- It ensure that tasks are executed in the correct order and according to the defined schedule.
+			- It maintaining the logging and monitoring.
+		- metastore:
+			information about the information of dag, task and etc.
+		- Tirgger:
+			- event that initiates the execution of a particular action, process, or workflow.
+		- Executors:
+			- It is responsible for executing the job.
+			- Types: 
+				- sequential : 
+					- tesing purpose, exec task without parallelism, 
+				- Local : 
+					- Allow limited parallelism on the same mechine where airflow running.
+					- Multiple workers process to exex tasks in parallel.
+				- celery:
+					- scalability, distributed task execution.
+					
+
+	cron: [https://crontab.cronhub.io/]
+		- It is a methodology to sheduling the workflow in the linux and airflow..
+		- * * * * *
+		   * - minute (0-59)
+		   * - hour (0-23)
+		   * - day of month (1-31)
+		   * - month (1-12)
+		   * - day of the week (0-6)
+		   
+			ex: 
+				- * * * * * 	= indicated every minutes.
+				- 0 * * * * 	= indicated every hour
+				- 0 0 * * * 	= every day at 12:00 AM 
+				- 0 0 * * FRI 	= at 12:00 Am only on friday
+				- 0 0 1 * * 	= at 12:00 AM on day 1 of the month.
+	

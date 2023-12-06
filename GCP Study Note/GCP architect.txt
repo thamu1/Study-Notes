@@ -1,0 +1,923 @@
+Challenge 1:
+	1. peak usage during holidays.
+	2. less load during rest of the time.
+	
+	Solution:
+		=> PEAK load provisioning:
+			Buy infrastucture for peak load.
+		=> 
+		
+challenge 2:
+	1. What if start up suddenly become populer.
+	2. need more infrastucture.
+		
+	SOlution:
+		=> Procure (buy before happend)
+		
+Region and Zones:
+
+	=> Deploy in multiple region.
+	=> have more data center to solve latency.
+	
+	Challenge:
+		1. slow access for users from other parts of the world (high latency)
+		2. What if data centre crashes. (low availability)
+		3. What if whole region is unavailable.
+		
+		solution:
+			=> Add one more data center in a same region.
+			=> If data center crashes we can get data from another one.
+			=> Need to have a same setup in the other region.
+		
+	Advantage:
+		Region:
+			=> High availability.
+			=> Low latency.
+			=> Global footprint. (app can run different region ease.)
+			=> Adhere to government regulation.
+		Zones:
+			=> How to achieve high availability in same region. (by using zones.)
+			=> Increased availability and fault tolerance.
+			=> zones in region connected through low-latency links.
+			
+	Quiz:
+		1. True statement:
+			ans: Region are availeble in multiple continent.
+		2. Which of these is an availability zone in the region of The Dalles, Oregon, North America - us-west1?
+			ans: us-weat1-a
+		3. How can you get high availability for global applications?
+			ans: Distribute servers across multiple region and multiple zones.
+
+Google Cloud Compute Engine: (Virtual Machines)
+	
+	Compute engine Fundamentals:
+		- If we need to deploy an application, we should have Compute Engine.
+		
+		Features:
+			1. Create and manage the lifecycle of virtual machine(VM) instance.
+			2. Load balancing and auto scaling. (Depends on the users)
+			3. Attach storage (& network storage) to VM.
+			4. Manage network connectivity and configuration for VM.
+	
+	Compute Engine Machine Family:
+		1. Choose depends on your workload.
+		2. Machine Family:
+			=> General purpose: [E2, N2, N2D, N1]
+				- Best performance ratio
+				- Web and application, Small-medium database, Dev Environment.
+			=> Memory Optimized: [M2, M1]
+				- Ultra high memory workload. (It depends RAM)
+				- Large-memory databases and in-memory analytics.
+			=> Compute optimized: (C2)
+				- Gaming application
+		Type of image:
+			1. Public Image: ex: OS (debian, Windows)
+			2. Custom Image; create by own (Kubernate, Docker)
+			
+		Setup HTTP server:
+			- sudo su (root user)
+			
+	Internal IP and external IP:
+		- External Ip: addresses are internet addressable. (can use in the Browser to access shell)
+		- Interanl IP: to corporate nerwork. (can use with in the GCP)
+		NOte:
+			1. Cannot have 2 similar external IP.
+			2. 2 different corporate nerwork can have same internal IP.
+			3. If stop VM, External IP is lost.
+		Senario:
+			=> how to get a constant IP for external 
+				:: Assign a static IP to VM
+				-> Go to VPC -> External IP Addresses -> +Reserve static address
+			Note:
+				1. static IP should be same region of your VM.
+				2. Static ip add can switch one to another VM in a same project.
+				3. Static IP remains attached even if instance stopped. we have to manually detach it.
+				4. You are billed for static IP, if you are not using as it as well.
+		
+	Simplify the step to create VM:
+		1. Startup script:
+			- Bootstrapping: Install OS patches or softwate when an VM is launched
+			- include the below commands into the new VM instance:
+				apt update
+				apt -y install apache2
+				echo "hello $(hostname)" > /var/www/html/index.html
+			- If we are creating a VM from other we need to pay for it.
+			- By using template create a VM is ease.
+				
+		2. Custom Image:
+			1. Persistent disk
+				- compute engine -> storage -> pre config (3 dot) -> create image -> 
+				- We cann't create a image from running image. stop the instance after try.
+			2. Snapshot (copy of persistent disk)
+			3. Image
+			4. File in cloud storage.
+			
+			Note:
+				- Hardening an Image: create images incorporate with your corporate security standards.
+		
+	Debugging:
+		- make sure that using right external IP.
+		- make sure that install apache2 (apt -y install apache2)
+	
+	compute engine Case:
+		=> what are Pre-requisites to be able to create VM instance?
+			1. Project
+			2. Billing account
+			3. Compute engine API should be enabled.
+		
+		=> How to get a dedicated hardware for our compliance, licensing, management?
+			1. to to create a sole-tenant nodes (compute ingine -> sole-tenant node)
+			2. it is expensive.
+			3. add node to VM (create VM -> management, security,disk, sole tenancy tab -> add affinity lables [Key:operator:value => group:IN:a])
+		
+		=> have 1000 VM how to automate OS patch management, inverntory, config, softwate install...
+			1. compute engine -> VM manager -> OS patch management -> 
+		
+		=> Want to login to your VM instance to intall software
+			1. Can use SSH into it.
+			
+		=> don't want to expose a VM internet
+			1. do not assign an external IP address.
+		
+		=> want to allow HTTP traffic to VM
+			1. configure firewall rule. (while creating VM)
+	
+	Compute engine features: (Graphical user interface)
+	 - How to do accelerate math intensive and graphics-intensive workloads for AI/ML ?
+		=> add a GPU to your virutual machine.	
+		=> Higeher cost.
+		=> (remember) Use images with GPU libraries(deep learning) installed.
+		=>	GPU restrictions:
+			- Not supported on all machine types (ex: shared-core, memory optimized machine types)
+			- On host maintanance(live migration). solution: Terminate VM instance.
+			- (recommanded) availability policy for GPU, => enable automatic restart.
+
+	Instance Group:
+		- group of VM instances managed as a single entity.
+		- Location can be either regional or Zonal (Reginonal is recommanded - High availability)
+		Types:
+			1. Managed:
+				- stateless - prefer for unpersistent data (REST API, web application)
+				- stateful - prefer for persistent data (databases..)
+			2. Unmanaged:
+		
+		Managed Instance Group: (MIG)
+			- same configration for all(create from identical template)
+			- Features: Auto scaling based on load, auto healing, managed release.
+			- If failure, That instance replaced by another one.
+			- detect application failure using health checks.(self healing)
+			- Load balancer. distribute load 
+			- release new application version without downtime. 
+				: canary deployment: Test new version with a group of instances before release to all instances.
+				: Rolling up update: release version step by step. eg: if we have 10 vm -> 2 vm updated first remaing will befollowed.
+		Unmanaged: (UMIG)
+			- allow to have different configuration VM instance in the same group.
+			- Features: Not auto scaling, healing, other services.
+		
+		Instance group Quiz: 
+			1. V1 is currently live. I would want to release V2 to a MIG without any reduction in capacity. Which of these options 
+				would you recommend to be set to 0?
+				=> make 0 t0 : --max-unavailable
+				
+			2. True or False: Unmanaged instance group provides you with self-healing and auto-scaling capabilities
+				=> False
+			
+			3. Can a MIG contain VMs created with different machine types?
+				=> No
+			
+			4. How can you prevent frequent scaling up and down of VM instances in a MIG?
+				=> give extra cool-down period.
+		
+	Cloud Load balancing: (-> Network Services -> Load balancing)
+		- distribute user traffic across Multiple instance of application
+			in single region or multiple region.
+		- Feature:
+			1. Health check - Route healthy instance (recover from failures).
+			2. Auto scaling.
+			3. Global load balancing with single anycast IP.
+			4. High availability, resiliency.
+			
+		HTTP vs HTTPS vs TCP vs TLS vs UDP:
+			- Network Layer[http, https, smtp] : Transfering bits and bytes.
+			- Transport Layer[tcp, tls, udp] : are the bits and bytes transferred properly.
+			- Application Layer[ip] : Make rest API and send mails.
+			
+			Note:
+				- For high performance i need to communicate directly to the network layer.(streaming process)
+		
+		Terminology:
+		
+			FronEnd(user) -> Cloud load balancer  -> VM compute engine group
+			1. Front to load balancer request by using IP add. (SSL certificate)
+			2. Host and path rule: define rules to redirect to different VM backend (Recommended: HTTPS)
+			3. Back end: VM that get traffic from google cloud load balancer.
+			
+			=> client to balancer: over internet [https recommanded]
+			=> load balancer to VM: google internal network. [http ok, https prefered]
+				 
+		MultiReginal micro service:
+			
+			Global routing:	
+				- Route user to nearest instance (Nearest reginal MIG)
+					=> Needs networking premium tier. 
+						2 tier => 
+						 - standard - can't do global routing 
+						 - premium - can do global routing
+		
+		Quiz:
+			
+			1. HTTPS Load Balancing can load balance between MIGs in different regions
+				=> True.
+				
+			2. Which of these networking tiers is recommended if you want to use Global HTTPS Load Balancing?
+				=> Premium Network Tier.
+			
+			3. How many HTTPS Load Balancing Backends would you need to support one version each of three different
+				microservices, each with two MIGs in two different regions?
+				=> 6(One for each MIG)
+	
+	COmpute engine load balancing for Architects:
+		1. Build resiliency.
+		2. Increase availability.
+		3. Increase scalability.
+		4. Imporve performance.
+		5. Imporve security.
+		6. Lower costs.
+		
+		Availability:
+			- Are the application available when the user need them.
+			Table: 9's Availability.
+				=> 99.5 => 22 min (downtime/month)
+				=> 99.9 => 4.30 min (downtime/month)
+				=> 99.999 => 26 sec (downtime/month)
+				
+		Scalability:
+			- A system handling 1000 transaction per second.
+			Load is expected to increase 10 times in the next month.
+				=> Can we handle growth in user, traffic, or data size without any
+					drop in performance.
+				=> 	Does ability to serve more growth increase proportionaly with resource?
+					ex: 1 source handle 1000 tra/sec -> increase source to 10 to achieve 10000 tra/sec.
+			
+			Solution:
+				=> 	Vertical scaling : large quantity instance, CPU power, RAM, I/O.
+					Note: But there was a limit for vertical scaling.
+				=> 	Horizontal Scaling :  multiple instances of application/database.
+					Note: it increase the scalability.
+						  It need additional infrastucture. [ Load Balancer ]
+				=> Summary:
+					- Vertical scaling increasing the size of instance.
+					- Horizontal scaling increaing the number of instance.
+			
+		Live Migration & Availability Policy:
+			=> Live migration lets Google Cloud perform maintenance without interrupting a workload, rebooting a VM,
+				or modifying any of the VM's properties, such as IP addresses, metadata, block storage data, 
+				application state, and network settings.
+			
+			-> while creating VM -> new VM instance -> fire wall -> management, security, disks, networking, sole tenancy -> availability policy.
+			- How do you keep your VM instance running when a host system needs to be updated.?
+				=> Live migration.
+					- Running VM instance migrate to another host in the same zone.
+					- does not change any attributes or properties of the vm.
+					- support for instances with local SSDs.
+					- Not support for TPU and attached GPUs and preemptible instances, Spot VM.
+				=> Configuration Policy/ Availability policy.
+					- what should happen during perodic infrastrcuture maintanance?
+						=> Migrate(default) : Migrate VM instance to other hardware.
+						=> Terminate: Stop the VM instance.
+						=> Automatic restart : while non-user initiate.
+		Security:
+			- use Firewall Rules to restrict traffic.
+			- use internal IP addresses as much as possible.
+			- Use sole-tenant nodes when you have regulatory needs.
+			- create hardened custom image to launch your VMs.
+		
+		Performance:
+			- Choosing right machine family for your workload.
+				ex: if chache choose memory. if you use compute choose CPU.
+			- Use GPUs and TPUs to increase performance
+				ex: GPU - accelerate ML and data processing workloads.
+				    TPU - for massive matrix operations performed in your machine learning workloads.
+			- prefer creating a hardened custom image to installing software at startup.
+				ex: included the needed software before install VM.
+		
+		Resiliency for compute engine & load balancing.
+			- Resiliency is ability of sysstem to provide acceptable behavior if system part fails.
+			
+			- Resilient architectures:
+				- Run VMs in MIG(managed instance group) behind global load balancing.
+				- use Cloud Monitoring for monitoring.				
+				- install logging agent to send logs to Cloud Logging.
+				- Enable live migration and automatic restart when available.
+				- configure the right health checks.
+				- Disaster recovery upto image copied to multiple regions.
+	Discounts:
+		Sustained use discounts:
+			- Automatic discounts:
+				- More usage you will get more discounts based on month.
+				- 50% usage -> 10% discount.
+				- not applicable for E2, A2 etc.
+				- Does not apply to VMs created by app engine fleible and Dataflow.
+		
+		Committed use discount.
+			-> compute engine -> Virtual machine -> committed use discount.
+			- If you can predict the resource how much needs go for commit 1 Year or 3 Years.
+				It will give you a 70% discount based on the Machine type and GPU.
+				Only applicable for instance created by google kubernetes engine and compute engine.
+			- Restriction: Does not apply to VMs created by app engine flexible and dataflow.
+	
+	Preemptible VM:
+		-> compute engine -> Virtual machine -> new instance -> firewall -> management_* -> availability policy -> on preemptiblity
+		- Short-lived cheaper(upto 80%) compute instances:
+			- It only for 24 hours useage, can stop any time with in that time.
+			- instances get 30 sec warning(to save anyting they want to save.)
+		- Use preempt  VM's if:
+			- Fault tolerant
+			- cost sensitive
+			- Workload is not immediate. ex: Non immediate batch processing jobs
+		- Restriction:
+			- Might not available always.
+			- No SLA and connot be migrated to regular VMs.
+			- No automatic restarts.
+			- Free tire credits not applicable.
+	
+	Spot VMs:
+		- Latest version of Preemptible VM.
+		Key difference:
+			=> There is no minimum or maximum runtime for Spot VM.
+				but Preemptible VM has maximum limit of 24 hours.
+		Features:
+			=> May be reclaimed at any time with 30-sec notice.
+			=> Not always availeble.
+			=> Dynamic price: 60-91% discount compared to on-demand VMs.
+				
+	Compute engine - Billing:
+		-> billing -> budget & alerts -> create
+		=> You are billed by the second (after a minimum of 1 min)
+		=> You are not billed for compute when stopped. however you are billed for storage attached with it.
+		=> (Recommended) Always create a budget alerts and make use of budget exports to stay on top of billing.
+			
+	Compute engine & Load balancing - Cost Efficiency:
+		- use auto scaling: Have optimal number and type of instances running.
+		- Understacnd sustained use discounts. [auto discount depends on useage of VM]
+		- Use Preemptible VMs for non critical fault tolerant workloads. [if load only for less hours a day]
+	
+	Quiz:
+		1. You want to keep your costs to a minimum. Which of these would you use for a non-time-critical fault-tolerant batch program?
+			=> Preemptible VM
+		
+		2. What of these statements about Preemptible VM are TRUE?
+			=> can be stopped by GCP anytime
+			=> Instances get a 30 sec warning to react
+			=> Premptible VMs are the cheapest VM options.
+		
+		3. Which of these is recommended for a web application that runs continuously serving hundreds of thousands of users?
+			=> committed use discounts.
+		
+		4. Enabling Live Migration on a VM instance helps you with increasing:
+			=> Resiliency and Availability.
+		
+		5. True or False: Vertical Scaling increases the availability.
+			=> False.
+			
+Gcloud:	
+	Defination:
+		- Command line interface to interact with google cloud resources.
+		- Most gcp services can be managed from CLI using glcoud.
+			ex: Compute engine Vitual machines, Managed instance groups, databases, etc.
+		- can create, delete, udpate, read, existing resources and perform action like deployments as well.
+		- (Recommended) Some gcp services have specific CLI tools
+			1. Cloud storage - gsutil
+			2. Bigquery - bq
+			3. Bigtable - cbt
+			4. Kubertes - kubectl(gcloud also manage clusters)
+		- Installing:
+			1. can use cloud SDK.
+			2. cloud shell.
+			
+	Commands:
+		=> command structure:
+			=> gcloud group subgroup action
+			ex: gcloud compute instance list
+			
+			
+		- gcloud init : initialize or reinitialize gcloud.
+		- gcloud config list : can see current active configuration of the project.
+		- gcloud compute instance list
+		- gcloud compute instances describe.
+		etc.
+		
+		Remember:
+			=> Cloud shell is backed by a VM instance.
+				automatically provisioned by gcp when you launch cloud shell.
+			=> 5GB free persistent disk storage is provided as you $HOME dir.
+			=> (Remember) Files in your home dir persist between session.(scripts, user conf file - .bashrc)
+			=> Instance is terminated if you are inactive for more than 20Min
+			=> (Remember) After 120 days of inactivity, $HOME dir also deleted.
+			=> cloud shell can be used to "SSH into virtual machines using their private IP address.
+
+Managed Services:
+
+	=> Services:
+		1. IaaS (Infrastructure as a services)
+		2. PaaS (Platform as a services)
+		3. SaaS (Software as a services)
+		4. FaaS (Function as a Services)
+		5. CaaS (Container as a Services)
+		6. Serverless.
+	
+	IaaS:
+		- Only Infrastructure from Cloud provider
+		- ex: Using VM to deploy your applications or databases.
+		- Our responsible:
+			- Application code and runtime.
+			- Configuration and load balancing.
+			- Auto scaling
+			- OS upgrades and patches.
+			- Availability.
+			- etc.
+			
+		-> Organ -> Virtualization -> Physical Hardware -> Networking 
+			Our  -> Os -> Application runtime -> Application.
+		
+	PaaS:
+		- use platform provided by cloud.
+		- Provider : Os, Application runtime, Scaling, Load balancing.
+		- Our : Configuration(App and services), application code (if needed.)
+		- Varieties:
+			=> CaaS(Container as a service) : Containers insetead of apps
+			=> FaaS(Functions as a service) : Functions insread of apps.
+			=> Databases : RDBMS, NoSQL, etc.
+			
+		Microservices:
+			- Flexibility to innovate and build applications in different languages.
+			- But deployment become complex.
+			- Use the docker to manage this kind of problem.
+	
+		COntainers: (Docker)
+			- If you have a service the create as an Docker image.
+			- depending on the work you need a runtime(python, os, etc.)
+			- Run the same in the any infrastructure.
+				- local machine, corporate data center, cloud 
+			- Advantage:
+				- Docker containers are light weight. it don't have a guest os.
+				- It provides isolation for containers.
+				- It is cloud neutral. [can run any infrastucture]
+		
+			Containers orchestration:
+				-> images(n) -> Container orchestration -> Cluster --> virtual server (n)
+				
+				Feature:
+					- Auto scaling: scale based on demand.
+					- sevice discovery: Help microservices find one another.
+					- Load balancer: Distribute load among multiple instances of a microservice.
+					- self healing: DO health checks anf replace failing instance.
+					- Zero downtime deployments: 
+			
+		Serverless:
+			- (Remember) serverless does not mean "No server". Thats mean your vendor take care of 
+				all the configuration of the server and you only focused on your developement.
+			- Zero visibility into infrastructure.
+			- (Remember) Pay per use.
+			
+	Gcp managed service for compute:
+		service: 
+			1. compute 
+				- high performance general purpose VMs that scale globally 
+				- IaaS.
+			2. Kubernetes
+				- orchestrate containerized microservice on kube.
+				- needs advnaced cluster configuration and monitoring.
+				- if job complex go for kubernetes else use cloud run.
+				- CaaS 
+			3. App engines:
+				- Higly scalable applications on a fully  managed platform.
+				- using open and familiar languages and tools.
+				- (remember) If your or using moderate load use app engine because if no load then it go zero Instance.
+				- PaaS (CaaS, Serverless)
+			4. Cloud Function
+				- Build enent driven application using simple, single purpose functions.
+				- FaaS, serverless.
+			5. Cloud Run.
+				- Develop and deploy highly scalable containerized applications.
+				- does not need a cluster.
+				- (Remember) if your orchestration simple then go for cloud run.
+				- CaaS, serverless.
+		
+		Quiz:
+			1. You want to migrate a custom C++ application running on a customized Linux
+				VM as-is to Google Cloud. Which of these services would you recommend?
+		
+				=> Compute engine.
+				
+			2. Which of these is the managed container orchestration service in Google Cloud?
+				=> Google Kubernetes Engine.
+			
+			3. Which of these can be used to build event-driven applications using simple, single-purpose functions in Google Cloud?
+				=> Cloud Functions - single purpose function.
+				
+			4. Which of these Google Cloud services is used to create high-performance and general-purpose VMs that scale globally?
+				=> Compute engine - vm creating.
+		
+		
+		
+	App engine:
+		
+		- Simplest way to deploy and scale your applications in GCP.
+		- Provides end-to-end applocation management.
+		- It support almost every languages.
+		- can connect to variety of google cloud storage products(cloud storage, cloud sql)
+		- No usage charges, Pay for resources provisioned.
+		
+		FeatureS;
+			- Auto load balancing and auto scaling.
+			- Managed playform updates anf application health monitoring.
+			- application versioning
+			- Traffic splitting, can define number of traffic should encounter into the Vm.
+		
+		Compute engine vs app engine:
+			
+			- compute engine:
+				- IaaS, More flexibility, 
+				- We need to choose,
+					- Image, SOftware, hardware
+					- Certificates, firewalls, 
+					- availability. etc.
+					
+			- App engine:
+				- PaaS, Serverless, lesser responsibility
+				- lower flexibility.(we cannot add GPU)
+				- for simple application like java, containerzied app etc.
+				
+			
+		Environment:
+			Standard:
+				- application run in language specific sandbox.
+				- complte isolate from OS/Disk/Other APPs.
+				- V1 : support older version of languages.
+					- for python and PHP restrict network access
+					- only white listed extension and lib allowed.
+				- V2(version): support latest version languages.
+					- Full access and no restriction on languages extension.
+				
+			Flexible:
+				- Application instance run within docker containers.
+				- support any runtime(python, java, etc.)
+		
+		App Engine - Application component Hierarchy:
+			
+			- Application : one app per project.
+			- Service : Multiple microservices or app components.
+				- Can have multiple services in a single app.
+				- Each service can have different service.
+				
+			- Versions: Each upgrades assosiated with code and configuration.
+				- Each version can run in one or more instances.
+				- multiple versions can co-exist.
+				- options to roll back and split traffics.
+		
+		Comparison bt Standard and Flexible:
+			
+			- Pricing:
+				- Standard : Instance hours.
+				- Flexible : Use of cpu, memory, persistent disk.
+			
+			- Scaling:
+				- stand : support manual, basic, automatic.
+				- flexi : Manual, Automatic.
+				
+			- Scaling to Zero:
+				- Stand : yes.  If no work load happend then can.
+				- Flexi : No, minimun one instance.
+			
+			- Instance startup :
+				- stand : sec (instance start with in sec)
+				- Flexi : It take a minute.
+			
+			- Rapid Scaling:
+				- stand : Yes.
+				- Flexi : No
+			
+			- request timeout:
+				- stand : 1-10 min
+				- Flexi : 60 min.
+	
+			- Local disk:
+				- stand : Mostly(except py, php). Can write to "/tmp"
+				- Flexi : Yes Ephemeral. New disk on startup. if restart then you will lose data.
+				
+			- SSH for debugging.
+				- stand : No 
+				- Flexi : yes
+		
+		Appengine scaling instance:
+			
+			Automatic:
+				- Recommended for continuous running workload.
+				- auto scaling based on CPU utility, max concurrent request, target throught utilization.
+			Basic:
+				- Recommended for adhoc workload.
+				- instance shutdown if zero reqeust.
+				- high latency possible. 
+				- not supported by app engine flexible.
+				- config max instance and idle timeout.
+			Manual:
+				- Config specific number of instance to run.
+				- adjust number of instance manually over time.
+				
+		App engine some command:
+			cd default-service
+			gcloud app deploy
+			gcloud app services list
+			gcloud app versions list
+			gcloud app instances list
+			gcloud app deploy --version=v2 [deploy new version]
+			gcloud app versions list
+			gcloud app browse
+			gcloud app browse --version 20210215t072907 [deploy old version again]
+			gcloud app deploy --version=v3 --no-promote [to check the new version without altering the old version.]
+			gcloud app browse --version v3
+			gcloud app services set-traffic --splits=v3=.5,v2=.5
+			gcloud app services set-traffic --splits=v3=.5,v2=.5
+			watch curl https://melodic-furnace-304906.uc.r.appspot.com/
+			gcloud app services set-traffic --splits=v3=.5,v2=.5 --split-by=random
+			 
+			cd ../my-first-service/
+			gcloud app deploy
+			gcloud app browse --service=my-first-service
+			 
+			gcloud app services list
+			gcloud app regions list
+			
+			- App engine can access the old version and new version in the same time.
+			- without any dowmtime we can deploy new version.
+				gcloud app deploy --version=v2 => by using this.
+		
+	Google Kubernetes Engine (GKE):
+		
+		- Most popular open source container orchestration solution.
+		- It can Deploy, Scale, Manage the APplication.
+		- Provides cluster management(including upgrades)
+		- Each cluster can have a different types of virtual machines.
+		- Build and manages container based applications.
+		
+		Features:
+			- auto scaling.
+			- service discovery.
+			- load balancer.
+			- self healing.
+			- Zero downtime deployments.
+			
+		Types:
+			- Standard.
+			- Autopilot.
+			
+		Standard:
+			- Kubernetes cluster with node configuration flexibility and pay per node.
+			- your the fully responsible for the complete cluster.
+			
+		Autopilot:
+			- Optimized Kubernetes cluster with a hands off experience and pay per pod.
+			- do not worry about the managing the cluster infrastucture(node, pod, etc).
+			- reduce your operational costs in running kubernetes cluster.
+			
+		Kubernetes Command:
+			
+			gcloud config set project my-kubernetes-project-304910
+			
+			
+			gcloud container clusters get-credentials my-cluster --zone us-central1-c --project my-kubernetes-project-304910
+			kubectl create deployment hello-world-rest-api --image=in28min/hello-world-rest-api:0.0.1.RELEASE
+			kubectl get deployment
+			kubectl expose deployment hello-world-rest-api --type=LoadBalancer --port=8080
+			kubectl get services
+			kubectl get services --watch
+			curl 35.184.204.214:8080/hello-world
+			kubectl scale deployment hello-world-rest-api --replicas=3
+			gcloud container clusters resize my-cluster --node-pool default-pool --num-nodes=2 --zone=us-central1-c
+			kubectl autoscale deployment hello-world-rest-api --max=4 --cpu-percent=70
+			kubectl get hpa
+			kubectl create configmap hello-world-config --from-literal=RDS_DB_NAME=todos
+			kubectl get configmap
+			kubectl describe configmap hello-world-config
+			kubectl create secret generic hello-world-secrets-1 --from-literal=RDS_PASSWORD=dummytodos
+			kubectl get secret
+			kubectl describe secret hello-world-secrets-1
+			kubectl apply -f deployment.yaml
+			gcloud container node-pools list --zone=us-central1-c --cluster=my-cluster
+			kubectl get pods -o wide
+			 
+			kubectl set image deployment hello-world-rest-api hello-world-rest-api=in28min/hello-world-rest-api:0.0.2.RELEASE
+			kubectl get services
+			kubectl get replicasets
+			kubectl get pods
+			kubectl delete pod hello-world-rest-api-58dc9d7fcc-8pv7r
+			 
+			kubectl scale deployment hello-world-rest-api --replicas=1
+			kubectl get replicasets
+			gcloud projects list
+			 
+			kubectl delete service hello-world-rest-api
+			kubectl delete deployment hello-world-rest-api
+			gcloud container clusters delete my-cluster --zone us-central1-c
+		
+		Services and ingress:
+			- Services are sets of pods with a network endpoint that can be used for discovery and load balancing.
+			- Ingress are collection of rules for routing external HTTP(s) traffic to services.
+		
+		Google kubernetes Engine cluster:
+			Cluster:
+				- group of compute engine instances
+				- type:
+					- Master node : manages the cluster
+					- worker node : run your workloads.
+				- Master node:
+					- all kubctl command take and control everything.
+					- API server: handles all communication for a k8s cluster(from node and outside)
+					- Scheduler: Decides placement of pods.
+					- Control Manager: Manges deployments and replica sets.
+					- etcd: Distributed database storing the cluster state.
+				- Worker node:
+					- Run your pods.
+					- kubelet: Manage communication with master node(s).
+			
+			Cluster Types:
+				- Zonal cluster:
+					- Single zone: single control plane. nodes rnning in the same zone.
+					- multi Zone: single control plane but nodes running in multiple zones.
+				- Regional cluster: 
+					- replicas of the control plane runs in multiple zones of the given region. Nodes are run in same zones where control plane runs.
+				- Private cluster:
+					- VPC native cluster. Nodes only have internal IP addresses.
+				- Alpha Cluster:
+					- Cluster with alpha APIs. early feature API's. used to test new k8s features.
+					
+		Kubernates - Pods:
+			- smallest deployable unit in kubernetes.
+			- a pod contains one or more containers.
+			- each pod is assigned an ephemeral IP address.
+			- FLow: deployment -> replica set -> pod -> containers.
+			- all containers in a pod sharing the following.
+				- network, ip address, storage, Ports, volumes(shared persistent disks)
+			- POD status: running, pending, succeed, filed, unknown.
+		
+		Deployment vs replica set:
+			- Deployment:
+				- its create for each microservices
+				- kubectl create deployment m1 --image=m1:v1
+				- deployment represents a microservices(with all its releases)
+				- deplyment manages new relases ensuring zero downtime.
+			- Replicasets:
+				- ensures that a specific number of pods are running for a specific microservice version.
+				- kubectl scale deployment m2 --replicas=1
+				- even fi one of the pods is killed, replica set will launch a new one.
+			- Deploy v2 of microservice create a new replica set
+				- kubectl set image deployment m1=m1:v2
+				- v2 replica set is created.
+				- deployment updates v1 and v2 replica sets based on the release strategies. 
+		
+		Kubernetes services:
+			- Each pod has its own IP address.
+			- If pod filed and replaced by replica set.
+			- all old releases replaced by one of new releases.
+			- kubectl expose deployment name --type=LoadBalancer --port=80
+			- Types:
+				- clusterIP: 
+					- expose service on a cluster internal ip.
+					- (use case): you want your service only be availeble inside the cluster.
+				- LoadBalancer:
+					- exposes services externally using a cloud porviders load balancer.
+					- (use case): you want to create individual load balancer for each microservice.
+				- NodePort:
+					- exposes service on each node's IP at a static port
+					- (use case): don't want to create external load balancer. instead create one ingress component to load balance multiple microservices.
+					kubernetes engine -> services & ingress -> create instance.
+					
+		- Ingress:
+			- these are collections of rules for routing external HTTP(s) traffic to services. can create ingerss using service tab.	
+			- we can redirect the traffic to different backent based on the path.
+			- (recommanded): NodePort service for each microservice. expose using a ingress.
+			- Advantage:
+				- if create one ingress create One load balancer and can serve multiple microservices.
+				 
+		- Image repository:
+			- If you create a image for your microservice then store it in.
+				- Container registry: fully managed container registry provided by GCP.
+				- Docker Hub.
+				- can be integrated to CI/CD tools to publish images to registry.
+			- you can secure your container images. Analyze for vulnerabilities and enforce deployment policies.
+			- Naming: Hostname/ProjectIF/Image:Tag-gcr.io/projectname/{holloworld}:{1}
+			
+		delete resource:
+			- first set the project : gcloud config set project {pro-name}
+			- service del : kubectl delete service {name}
+			- deployment delete : delete deployment {dep name}
+			- cluster del : gcloud container clusters delete {cls name} -- zone {zone}
+		
+		Summary:
+			- Hardware : cluster, master node, worker node, node pool, etc.
+				- cluter:
+					- master node : manage cluster, control worker node, intract with user.
+					- worker node : run your workloads (as pods)
+					- Node pool : group of nodes in a cluster in a cluster with same configuration.
+			- software : pods, deployments, services etc.
+				- Pods : smallest deployable unit in kubeernetes. deployed to worker node(s)
+				- deployments : manage pods.
+				- service : expose deplyments.
+				
+		Ex:
+		
+		BackendTLSPolicy is configured to use system certificates to connect with a TLS-encrypted upstream connection where Pods backing the dev Service are expected to serve a valid certificate for dev.example.com.
+		
+		YAML:
+		
+		apiVersion: gateway.networking.k8s.io/v1
+		kind: HTTPRoute
+		metadata:
+		  name: timeout-example
+		spec:
+		  parentRefs:
+		  - name: example-gateway
+		  rules:
+		  - matches:
+			- path:
+				type: PathPrefix
+				value: /timeout
+			timeouts:
+			  request: 10s
+			  backendRequest: 2s
+			backendRefs:
+			- name: timeout-svc
+			  port: 8080
+			
+						
+		Kube Quiz:
+			
+		1. You want to deploy a complex microservices architecture using container orchestration. Which of these GCP services would you make use of?
+			=> Kubernetes Engine.
+		
+		2. A pod becomes unhealthy. Which of these will identify and replace the pod?
+			=> ReplicaSets
+		
+		3. How do we store sensitive configuration (passwords) in Kubernetes?
+			=> Secrets
+		
+		4. Which of these commands is used to connect to a Kubernetes Cluster?
+			=> gcloud container cluster get-credentials.
+		
+		5. You want to deploy a new version of microservice without any downtime. Which of these approaches would you recommend?
+			=> update the existing deployment with the image of a new version of the microservice.
+		
+		6. You have 3 instances of a microservice deployed to a Kubernetes Cluster. You want to enable auto-scaling for the microservice. You also want to automatically increase the number of nodes in the cluster if existing nodes are not sufficient. Which of these approaches would you recommend?
+			=> Use `kubectl autoscale deployment` command to auto scale pods and use `gcloud container cluster update` command with --enable-autoscaling to auto scale cluster.
+		
+		
+	Google cloud Function:
+		
+		defination:
+			- Google Cloud Functions is a serverless execution environment for building and connecting cloud services. With Cloud Functions you write simple, single-purpose functions that are attached to events emitted from your cloud infrastructure and services. Your function is triggered when an event being watched is fired. Your code executes in a fully managed environment. There is no need to provision any infrastructure or worry about managing any servers
+			
+		Types of Cloud Functions:
+			There are two types of Cloud Functions:
+
+			HTTP functions :
+				- which handle HTTP requests and use HTTP triggers. See Write HTTP functions for information about implementing HTTP functions.
+
+			Event-driven functions : 
+				- which handle events from your cloud environment and use event triggers as described in Cloud Functions triggers. See Write event-driven functions for information about implementing event-driven functions.
+						
+			pricing:
+				- 128 MB compute time provisioned -> $ 0.00000231 + 0.0833 vCPU.
+				
+				- invocation per month:
+					- 2 million req/res => Free.
+					- Beyond 2 Million 	=> $0.40
+					
+			Use case:
+				1.[stream processing] Pub/sub tirgger the function -> process uploaded image -> detects offensive images -> blur image -> store.
+				
+				2. [sentiment analysis] text meg <-> twilio(sms chat sdk) <-> cloud function <-> bigquery and NLP api.
+				
+				
+			
+			
+		
+		
+		
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		

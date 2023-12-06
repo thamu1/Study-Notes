@@ -1,0 +1,85 @@
+Django-Mysql Docker image:
+
+- pip install django
+- python -m venv django-env
+- code . [to open in vs code]
+-  activate django-env/sctipts/ - activate
+- django-admin startproject proname
+- cd proname 
+- py manage.py startapp appname
+- py manage.py runserver
+
+
+Docker:
+	
+- pip freeze > requirements.txt
+- Dockerfile
+ --------------
+	FROM python:3.9
+		
+	ENV PYTHONUNBUFFERED 1
+	ENV PYTHONDONTWRITEBYTECODE 1
+
+	WORKDIR /code
+
+	COPY requirements.txt requirements.txt
+
+	RUN pip install --no-cache-dir --upgrade pip && \
+	pip install --no-cache-dir -r requirements.txt
+
+	COPY . /code
+
+	RUN python manage.py makemigrations && python make migrate
+
+	EXPOSE 8001
+
+	CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+
+
+- docker-compose.yaml
+	version: "3"
+
+	services:
+	  db:
+		image: mysql:latest
+		container_name: django_db
+		environment:
+		  DB_HOST: db
+		  MYSQL_DATABASE: sample_db
+		  MYSQL_USER: sample_user
+		  MYSQL_PASSWORD: sample_password
+		  MYSQL_ROOT_PASSWORD: sample123
+		restart: always
+		ports:
+		  - 3306:3306
+	  
+	  app:
+		build:
+		  context: .
+		  dockerfile: Dockerfile
+		container_name: django_app
+		image: django:app
+		environment:
+		  DB_HOST: db
+		  MYSQL_DATABASE: sample_db
+		  MYSQL_USER: sample_user
+		  MYSQL_PASSWORD: sample_password
+		  MYSQL_ROOT_PASSWORD: sample123
+		ports:
+		  - 8001:8000
+		depends_on:
+		  - db
+		links:
+		  - db
+		  
+				
+- docker-compose up
+
+- mysql -u root -p sample123
+	
+- ping -c 3 db
+
+- apt update
+- apt install net-tools iputils-ping
+
+	
