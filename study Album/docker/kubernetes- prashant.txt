@@ -1,0 +1,221 @@
+Kubernetes:
+
+	- It is a orchestration engine that help to create a containers to develope, testing, deploy.
+	- Dockers advance version and has more feature, replacement for docker spam.
+	1. containerized applicaton
+	2. non containerized applicaton
+	
+	Features:
+		- Open source, container orchestration, automate scaling of workloads.
+		- written in GO language.
+		- self healing, load balancing.
+		
+	Pods:
+	------
+		
+		Meaning:
+			- Deployable atomic unit is Pod in kube. but in docker deployable atomic unit is containers.
+			- Pod is a wrapper that has one or more containers.
+			- containers can runs an application inside a top-level pod even if the pod contains single container.
+			
+			1. Package app as image and run as container
+			2. Wrap containers in a POD.
+			3. Use manifest file to deploy or create pod(s). using deployment yaml can create multiple pods.
+		
+		Life cycle:
+			1. Pending state: Pod has need accepted by the API, but not serviced yet.[request received searching for node]
+			2. Creating state: scheduler identified nodes/vm and pulls relevant images. [start creating the env]
+			3. Running state: Tries to start the containers. It will retry again and again [run the container]
+			4. CreashBackoff: After tries so many times to run the container if it not run then it will move to crashBackoff.
+			
+			*. Stuck in pending: If node not identified. its called pending state.
+			*. stuck in creating: If image not found.
+			
+			#. init containers: 
+				- It is a specialzed containers with start-up code.
+				- Runs before app containers in POD.
+				
+		Summary:
+			- automic unit.
+			- container wrapper
+			- pod create using pod/deploy spec file.
+				
+				
+	Create cluster and Pod spec yaml:
+	---------------------------------
+		
+		
+		
+		- apiVersion, kind, metadata, spec
+		
+			apiVersion:
+				- which version of the kubernetes api you're using to create this object.
+				
+			kind:
+				- what kind of object you want to create.
+				- Pod, Depolyment, Service, Job or DemonSets.
+				
+			metadata:
+				- additional information about the pod.
+				- Data that helps uniquely identify the object, including a name string, UID, and optional namespace.
+				- name: some_name
+				  lables:
+					env: 
+					type:
+					identifier:
+				
+			spec:
+				- What satae you desire for the object.
+				- container/containers
+					- name: name_for
+					  image: image_name
+					  ports:
+						- containrtPorts: 80
+		- ps1='k8s> '
+		
+		- gcloud config set projectName.
+		- kube login.
+		- kubectl get nodes
+		- kubectl get nodes -o wide
+		
+		- vi fileName.yml [paste the config content]
+		- kubectl apply -f fileName.yml
+		- kubectl get pods
+		- kubectl describe pods podName
+		- kubectl get deployments
+		- kubectl delete pod pod-id 
+		
+		
+		full yaml ex:
+		-------------
+			
+			apiVersion: v1
+			kind: Pod
+			metadata:
+				name: nginx
+			spec:
+				containers:
+					- name: nginx
+					- image: nginx:Latest
+					- ports:
+						- containerPort: 80
+				
+		
+
+		YAML with multiple containers [Deployment]:
+		-----------------------------------------
+		
+			- Kubernetes application configured using YAML files. this will allow us to control Kubernetes app with ease.
+			- It will allow JSON or YAML.
+			- It's key-value pair, lists, maps, list of maps and map of lists.
+			- four fields must need = apiVersion, kind, metadata, spec.
+			
+			apiVersion:
+				- it clear that it is related to API and it used to create the kubernetes object.
+				- value will be v1 or app/v1
+				
+				ex: apiVersion: v1
+			
+			kind:
+				- It define the type of object we aim to create. It will linked to apiVersion.
+				- Objects [Pod, Depolyment, Service, Job or DemonSets]
+				
+				ex: kind: Pod
+			
+			metadata:
+				- metadata provides unique properties of that object.
+				- Have [name, namespace, label]
+				
+				ex: 
+				metadata:
+					name: nginx
+					
+			spec:
+				- In spec we define the operation(work) of the object.
+				- Have [containers, memory requirement, storage volume, network, other details]
+				- [note] make sure to properly indent.
+				
+			ex:
+			spec:
+				containers:
+				- name: nginx
+				  image: neginx: 1.14.2
+				  ports:
+				  - containerPort: 80
+			
+						
+			
+			nginx deployment:
+			-----------------
+			
+			apiVersion: v1
+			kind: Deployment
+			metadata:
+				name: nginx-deployment
+				labels:
+					app: neginx-app
+			spec:
+				replicas: 3
+				selector:
+					matchLabels:
+						env: prod-pod
+				template:
+					metadata:
+						name: nginx-pod
+						labels:
+							env: prod-pod
+							type: front-end
+							identifier: nginx-fe-prod-pod
+					spec:
+						containers:
+							- name: nginx-con
+							  image: nginx:Latest
+							  ports:
+								- containerPort: 80
+							
+						
+	
+
+
+
+
+		self-healing:
+		-------------
+		
+		- self-healing porperty ensures that the cluster always function at the optimal state by monitoring and replacing unhealthy container as per the desired configuration.
+
+
+
+
+	
+-----------------------------------------	
+
+scaling.
+
+microservices technology 
+	spliting the hosts manages by multiple team. home, login, logout
+	
+- dockreshim
+
+standared:
+--------------
+- oci (open container initiative)
+- cri (container runtime interface)
+
+
+why kube compare to docker swam
+
+- auto scaling possible
+- orchestration.()
+
+kube remove dockershim - connector
+docker - rejected kube to support 
+
+=> quay.io
+
+1. docker file :
+	- it will have the dependencies
+	
+2. docker image
+
+3. docker container
