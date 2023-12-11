@@ -1,3 +1,7 @@
+git set folder:
+git config --global --add safe.directory 'D:/thamu/study Album/Study-Note'
+
+
 # Initialize a new Git repository
 git init
 

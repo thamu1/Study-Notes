@@ -44,6 +44,21 @@ Kubernetes:
 	Create cluster and Pod spec yaml:
 	---------------------------------
 		
+		- ps1='k8s> '
+		
+		- gcloud config set projectName.
+		- kube login.
+		- kubectl get nodes
+		- kubectl get nodes -o wide
+		
+		- vi fileName.yml [paste the config content]
+		- kubectl apply -f fileName.yml
+		- kubectl get pods
+		- kubectl describe pods podName
+		- kubectl get deployments
+		- kubectl delete pod pod-id 
+		- kubectl get pods -l env=test [to search the pods = sql like "%a"]
+		- 
 		
 		
 		- apiVersion, kind, metadata, spec
@@ -71,19 +86,6 @@ Kubernetes:
 					  image: image_name
 					  ports:
 						- containrtPorts: 80
-		- ps1='k8s> '
-		
-		- gcloud config set projectName.
-		- kube login.
-		- kubectl get nodes
-		- kubectl get nodes -o wide
-		
-		- vi fileName.yml [paste the config content]
-		- kubectl apply -f fileName.yml
-		- kubectl get pods
-		- kubectl describe pods podName
-		- kubectl get deployments
-		- kubectl delete pod pod-id 
 		
 		
 		full yaml ex:
@@ -174,9 +176,10 @@ Kubernetes:
 								- containerPort: 80
 							
 						
-	
-
-
+			Summary:
+				- POD yaml = apiVersion, kind, metadata, spec
+				- Deployment yaml = apiVersion, kind, metadata, spec [replica, selector, template(container details -> metadata, spec)]
+				
 
 
 		self-healing:
@@ -184,7 +187,30 @@ Kubernetes:
 		
 		- self-healing porperty ensures that the cluster always function at the optimal state by monitoring and replacing unhealthy container as per the desired configuration.
 
-
+	Namespace:
+	----------
+	
+		- Namespace are virtual clusters backed by the same physical cluster. [it helps to create a virtual cluster in physical cluster]
+		- It mainly used for segregation.
+		
+		Key points:
+			- Namespace should be unique and resources within the namespace should also be unique.
+			- same resource name can exist in different Namespace.
+			- avoid create namespace with KUBE- / kube-.
+			- Helps to group the resources. thats why it is creating the virtual cluster in physical cluster.
+			
+			
+			
+		Create Namespace:
+			- connect with kubernetes.
+			- kubectl get namespaces
+			- kubectl create namespace <ns_name>
+			- we can create this namespace using spec (.yml) - apiVersion, kind: Namespace, metadata, spec
+			- kubectl apply -f myns.yml
+			- kubectl get pods -n hr-ns
+			- kubectl describe pod <pod name or id>
+			- kubectl describe pod <pod name or id> -n <namespace_name>
+			
 
 
 	
