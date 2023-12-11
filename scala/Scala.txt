@@ -4,8 +4,9 @@ Scala Defination:
 	- created by Martin Odersky.
 	- Compiled to Run on JVM.
 	- Code -> Java Byte code -> JVM -> Machine level Code.
+	- every function -> value (every value objects) -> so every function objects
 	
-Basic;
+Basic:
 	- Object: 
 		Object is an instance of class. Object have state and behaviour.
 	- Class:
@@ -82,9 +83,9 @@ Traits: ("with" - key)
 	  def triangle(): Double       	<- here abstract method
 	}
 	
-	class copy extends Shape with shape2{
-		// should have been using the area and description function
-		inherit from abstract class otherwise you will got an error.
+	class copy extends Shape1 with shape2{
+		// should using the area and description function
+		inherit from abstract class otherwise you will get error.
 		def area(){  
 			// It must be need.
 		}

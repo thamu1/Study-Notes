@@ -1,0 +1,8 @@
+application deployment:
+
+1. GCP - VM (ubuntu)
+2. Firewall Rull set port -> 8000, 80
+3. docker 
+	- docker build -t appname .
+	- docker run -d --name conname -p 80:8000 imagename/id
+	
