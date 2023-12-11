@@ -10,12 +10,13 @@
 10 . sudo apt-get install libmysqlclient-dev
 11 . sudo apt-get install libssl-dev
 12 . sudo apt-get install libkrb5-dev
-13 . pip3 install apache-airflow
+13 . pip install apache-airflow
 14 . sudo nano /etc/wsl.conf
-15 . ADD in -> [automount]
-		root = / 
-		options = "metadata"
-16 . nano ~/.bashrc - >   export AIRFLOW_HOME = c/airflow
+15 . ADD in -> 
+[automount]
+root = / 
+options = "metadata"
+16 . nano ~/.bashrc - >   export AIRFLOW_HOME='airflow'
 	=> source ~/.bashrc
 17 . sudo apt update  - >   cd airflow
 18 . ls
@@ -42,11 +43,18 @@ GRANT USAGE,EXECUTE ON *.* TO 'air'@'%';
 GRANT ALL PRIVILEGES ON air.* TO 'air'@'%';
 FLUSH PRIVILEGES;
 
+
 27 . In airflow.cfg - > sql_alchemy_conn = mysql://air:password@<host>:<port>/air
 28 . cd -e -> airflow db init
 29 . airflow webserver , airflow scheduler.
 30 . sudo chmod 777 dags
 
+
+sql_alchemy_conn = mysql://airflow:airflow.08@127.0.0.1:3306/airflow
+
+# CREATE DATABASE airflow;
+# CREATE USER 'airflow' IDENTIFIED BY 'password';
+# GRANT ALL PRIVILEGES ON airflow.* TO 'airflow';
 	  
 Airflow - Mysql 
 
@@ -66,9 +74,9 @@ Operator - >
 
 
 
+airflow delete -u airflow
 
-
-airflow users create --username thamu --firstname thamu --lastname c --role Admin --email admin 
+airflow users create --username airflow --firstname thamu --lastname c --role Admin --email admin 
 
 
 
