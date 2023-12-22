@@ -1,0 +1,70 @@
+Spark:
+	
+	- Spark is a open source application, 2009 released.
+	- Apache spark is a unified analytics engine for large-scale data processing. It support Java, Python, R, Scala.
+	- Four Core Modules:
+		- Spark SQL, Dataframe
+		- Spark Structured steaming.
+		- Spark Mlib
+		- Spark Xgraph
+	- Modes of Deployment:
+		=> the deployment mode specifies where the driver program will be run.
+		- Cluster mode - Spark driver component does not run on the machine from which the spark job has been submitted. Driver may be running as one of the worker nodes.
+		- Client mode - Spark driver component runs on the machine node from where the spark jobs is submitted. Driver is launched within the application.
+		- Standalone - Self managing runs workloads. No need for external cluster manager. Java must be installed on each machine.
+	
+	Features:
+		- Faster Processing tool compared to hadoop's Mapreduce.
+		- Transformation, Action.
+		- Lazy Execution. Program start Transformations after action.
+		- In memory Computation. (Stored in RAM) 
+		- Fault Tolerance : It start from where it got failure.
+	
+	Three types:
+		- RDD
+		- Datasets
+		- DataFrame
+	
+	RDD:
+		- Resilient Distribution Datasets.
+		- Fault tolerance, Parallelizm, Data processing.
+		- Way of creatig:
+			- Prallelized collection - Running parallely
+			- Hadoop datasets - operation on file.
+	
+	Architecture:
+		- Master & Slave Architecture.
+		- Master:
+			- Driver Programe(Spark session, spark context)
+			- Every application starts with spark context.
+			- It communicate with cluster Manager and Slave Nodes.
+			- The driver manager receive the code from user and It told the cluster manager to allocate the resource as per the user defined.
+			- The Driver Programe pass the code to Worker node for the execution. The the result will pass to the Driver Programe.
+			- It is responsible for coordinating and distributing the work across multiple nodes.
+			- It schedule the task, track the state of worker node.
+			
+		- Worker Node:
+			- It runs the application in cluster and reports to driver program.
+			- Jobs: process data, store the data, handle the network.
+			- Each node having its own executors.
+	
+	DAG in spark:
+		- Directed Acyclic Graph with no directed cycles. It is sequential manner of execution (transformation of RDD).
+		
+	Apache streaming:
+		- SOurce: Kafka, etc.
+		- Get the data and move them to spark processing (it is as batch process some x sec)
+		- It following round robin method.
+		- Types:
+			- Reliable: Receiver send acknowledgement to the source post success. It replication on the spark storage space
+			- Unrelaiable: There is no acknowledgement sent to the data sources.
+		
+	Replication and Coalesce:
+		- Replication:
+			- Increase or decrease the data partition.
+			- repartion create a new data partition and perform full shuffle of evenly distributed data.
+			- Its internally calls coalesce. Thereby making it slower then coalesce.
+		- Coalesce:
+			- Readuce partion only.
+			- reduce amount of shuffled data unevenly.
+			- if unequal-sized partitions, speed might be slightly slower.
