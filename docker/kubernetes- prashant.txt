@@ -18,27 +18,27 @@ Kubernetes:
 			- Pod is a wrapper that has one or more containers.
 			- containers can runs an application inside a top-level pod even if the pod contains single container.
 			
-			1. Package app as image and run as container
+			1. Package app as image and run as container.
 			2. Wrap containers in a POD.
-			3. Use manifest file to deploy or create pod(s). using deployment yaml can create multiple pods.
+			3. Use manifest file(YML) to deploy or create pod(s). using deployment yaml can create multiple pods.
 		
 		Life cycle:
 			1. Pending state: Pod has need accepted by the API, but not serviced yet.[request received searching for node]
 			2. Creating state: scheduler identified nodes/vm and pulls relevant images. [start creating the env]
 			3. Running state: Tries to start the containers. It will retry again and again [run the container]
-			4. CreashBackoff: After tries so many times to run the container if it not run then it will move to crashBackoff.
+			4. CreashBackoff: After tries so many times to run the container if it is not run then it will move to crashBackoff.
 			
 			*. Stuck in pending: If node not identified. its called pending state.
 			*. stuck in creating: If image not found.
 			
 			#. init containers: 
-				- It is a specialzed containers with start-up code.
+				- It is a specialized containers with start-up code.
 				- Runs before app containers in POD.
 				
 		Summary:
-			- automic unit.
-			- container wrapper
-			- pod create using pod/deploy spec file.
+			- PODs are automic units.
+			- container wrapper.
+			- pod create using kind (pod/deployment) in Yaml file.
 				
 				
 	Create cluster and Pod spec yaml:
@@ -54,12 +54,11 @@ Kubernetes:
 		- vi fileName.yml [paste the config content]
 		- kubectl apply -f fileName.yml
 		- kubectl get pods
-		- kubectl describe pods podName
+		- kubectl describe pods <podName>
 		- kubectl get deployments
-		- kubectl delete pod pod-id 
-		- kubectl get pods -l env=test [to search the pods = sql like "%a"]
-		- 
-		
+		- kubectl delete pod <pod-id> 
+		- kubectl get pods -l env=<test> [to search the pods = sql like "%a"]
+		-
 		
 		- apiVersion, kind, metadata, spec
 		
@@ -110,7 +109,7 @@ Kubernetes:
 			- Kubernetes application configured using YAML files. this will allow us to control Kubernetes app with ease.
 			- It will allow JSON or YAML.
 			- It's key-value pair, lists, maps, list of maps and map of lists.
-			- four fields must need = apiVersion, kind, metadata, spec.
+			- four fields must need => apiVersion, kind, metadata, spec.
 			
 			apiVersion:
 				- it clear that it is related to API and it used to create the kubernetes object.
@@ -200,7 +199,6 @@ Kubernetes:
 			- Helps to group the resources. thats why it is creating the virtual cluster in physical cluster.
 			
 			
-			
 		Create Namespace:
 			- connect with kubernetes.
 			- kubectl get namespaces
@@ -211,7 +209,25 @@ Kubernetes:
 			- kubectl describe pod <pod name or id>
 			- kubectl describe pod <pod name or id> -n <namespace_name>
 			
-
+	Pods:
+		- Pod is a collection of one or more containers that operate together. 
+		- Pods are the smallest unit of execution in Kubernetes.
+	
+	Nodes:
+		- Nodes is a machine, having necessary services to run pods including CPU and memory resources they need to run.
+		- Machine that runs containerized workload as part of a Kubernetes cluster.
+		- Node can be Physical or Virtual machines and can be hosted on-premises or in the cloud.
+	
+	Control Plane:
+		- Nodes managed by control plane.
+		- This automatically handles scheduling the pods across the nodes in the cluster.
+		
+	Deamon set:
+		- Everytime new node added to a cluster, the pod is added to it and when a node is removed from the cluster the pod is removed.
+		- It used to ensure that all eligible nodes run a copy of a pod.
+		- DeamonSet controller creates a Pod for each eligible node and spec.
+		- It manages the number of pod copies run in a node.
+		- Single copy of your app must run on all or subset of the nodes in the cluster.
 
 	
 -----------------------------------------	
