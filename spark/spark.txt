@@ -7,11 +7,42 @@ Spark:
 		- Spark Structured steaming.
 		- Spark Mlib
 		- Spark Xgraph
+		
+	Spark workflow:
+	
+		- submit the spark application
+		- Spark context:
+			Dag scheduler:
+				- unsolved query plan -> optimized logical plan -> physical plan 
+				
+			Task scheduler:
+				- task 
+		- Resource negotiation
+		- Instruction to available worker.
+		- Executor registors with driver 
+		- Driver monitors and palns for future task.
+		
+			
+	
 	- Modes of Deployment:
 		=> the deployment mode specifies where the driver program will be run.
-		- Cluster mode - Spark driver component does not run on the machine from which the spark job has been submitted. Driver may be running as one of the worker nodes.
-		- Client mode - Spark driver component runs on the machine node from where the spark jobs is submitted. Driver is launched within the application.
-		- Standalone - Self managing runs workloads. No need for external cluster manager. Java must be installed on each machine.
+		
+		- Cluster mode:
+			- driver program and executor runs on the same machine. [ YARN, Mesos, Kubernetes ]  
+			- Its is best for production.
+			- Spark driver component does not run on the machine from which the spark job has been submitted.
+			- Driver may be running as one of the worker nodes.
+			
+		- Client mode:
+			- driver program run in local and the executor runs on the cluster node.
+			- it is best for development phase.
+			- Spark driver component runs on the machine node from where the spark jobs is submitted.
+			- Driver is launched within the application.
+			
+		- Standalone:
+			- Self managing runs workloads. No need for external cluster manager.
+			- Its best for testing purpose.
+			- Java must be installed on each machine.
 	
 	Features:
 		- Faster Processing tool compared to hadoop's Mapreduce.
@@ -50,6 +81,8 @@ Spark:
 	
 	DAG in spark:
 		- Directed Acyclic Graph with no directed cycles. It is sequential manner of execution (transformation of RDD).
+		- It helped for data lineage.
+		- through lineage it achieve falut tolerance and resilient.
 		
 	Apache streaming:
 		- SOurce: Kafka, etc.
@@ -60,11 +93,312 @@ Spark:
 			- Unrelaiable: There is no acknowledgement sent to the data sources.
 		
 	Replication and Coalesce:
-		- Replication:
+		Replication:
 			- Increase or decrease the data partition.
 			- repartion create a new data partition and perform full shuffle of evenly distributed data.
 			- Its internally calls coalesce. Thereby making it slower then coalesce.
-		- Coalesce:
+		Coalesce:
 			- Readuce partion only.
 			- reduce amount of shuffled data unevenly.
 			- if unequal-sized partitions, speed might be slightly slower.
+		
+		Shared variables or Miminized data transfer:
+			Broadcast variables :
+				- allow programmer to keep a read only varibale cached on each machine rather than shipping a copy of it with tasks. Limit 10MB.
+			
+				- The result is stored in local for quick access.
+				
+				- it is read only. cached in memory, reduce network traffic.
+				
+				- It increases the efficiency of the join between large and small RDD.
+				
+				- A broadcast variable is entirely cached on each worker node so it doesn't need to be shipped or shuffled between nodes with each stage
+			
+			Accumulator:
+				- It is used for aggreagating information across the executors.
+				
+				- Updated only by worker tasks using += operator.
+				
+				- read only by driver program (spark context, sparksession).
+				
+				- Use case: no.of errors, invalid record, gathering info for debugging or logging
+				
+				- sc.accumulator(0).value
+				
+				- Update the variable value in parallel during execution.
+				
+	Shuffling:
+		- Process of redistribution of the data across different partition.
+		
+		- which might or might not cause data movement across the JVM processes or the exucutors on the seperate machines is known as shuffling or repartition. 
+		
+		- Parition is nothing but a smaller logical division of data.
+		
+		- groupByKey() , reducebyKey() , join() , groupBy() e.t.c.
+		
+	YARN in spark:
+		- Yet Another Resource Negotiator.YARN is a cluster management technology.
+		
+		- Managing and allocating resources such as CPU, memory, and storage
+		
+		- Monitoring and managing workloads.
+		
+		- app submit -> resource manager allocate resource for running an application -> tell node to create the container to run the task. -> the task executed in the container.
+		
+	Spark Dataset:
+		- The datasets are the data structure in spark sql. It is an extension to dataframe.
+		
+		- It provide oop interface. it has encoding feature and this is the primary concept of serilization and deserialization.
+		
+		- Encoders are used to convert JVM objects and spark internal binary format.
+		
+		- It has the combined powers of both RDD and DataFramaes. 
+		
+		- dataset we can analyse the data during runtime.
+		
+		- These are serializable and queryable, so we can save that to the persistent storage Etc.
+		
+		- It uses tool like catalyst and optimizer to make the dataset very optimized and it make flow graph from the query.
+		
+	Spark DataFrame:
+		- DataFrame immutable, in-memory, resilient data.
+	
+		- Distributed collection of datasets organized into rows and columns similar to SQL table.
+		
+		- It has the ability to processing the data in sizes ranging from kb to perabyte on a single node to large cluster.
+		
+	Executor Memory:
+		- The amount of memory allocate to each executor process to store intermidiate data, cached data and execution buffers in a spark application.
+		
+		- Executors are responsible for performing data processing and computation tasks.
+		
+		- Formula for memory overhead:
+			-  max( executor memory * 0.1, 384mb)
+			
+	Spark core:
+		- it is the main engine for large-scale distributed and parallel data processing.
+		
+		- Jobs: 
+			- Memory management,
+			- job monitoring, 
+			- falut-rolerence storage system interaction, 
+			- job scheduling 
+			- supporting all I/O functionalities.
+		
+	Worker node:
+		- it run the spark application in a cluster. 
+		
+		- worker node let know their availability to the driver program.
+		
+		- The master decide what amount of resource need to be allocated and then based on their availability the task are scheduled for the worker nodes by the master.
+		
+	Demerits of spark:
+		- It may lead to some memory based problem due its use of more storage spark.
+		
+		- Cost efficient in bigdata processing due to is in-memory computation.
+		
+		- * when using large number of small files (gzipped). spark needs to uncompress these files by keeping them on its memory and network.
+
+		- So, large amount of time is spent in burning core capacities for unzipping the files. 
+		
+		- spark doesn't work well in multi-user environments as it is not capable of handling many users concurrently.
+		
+	
+	SchemaRDD:
+		- It has schema information regaring the datatype each column. 
+		
+		- ex:
+			- RDD [person table]
+			- schemaRDD [Row(name (string), age(int))] = having the information about the column.
+			
+	SparkSQL:
+		- It is one of the core module of the spark. Which perform relational data processing comnined with the power of functional programming feature of spark.
+		
+		- It allow programmer to write a query on top of the data.
+		
+		- SparkSql MODULES:
+			- Data source API
+			- DataFrame API
+			- Interpreter & catalyst Optimizer
+			- SQL service
+			
+		- It support data read and write operations in various sturctured formats like JSON, Hive, Parquet etc.
+		
+		- It allow to connect other tools using JDBC or ODBC connection.
+		
+	Different persistence level in Spark:
+	
+		- persist() method on the RDD is to storing the intermediary data on memory or disk or both with different level of replication. 
+		
+		types:
+			- memory only.
+			- memory_and_disk
+			- memory_only_ser
+			- memory_and_disk_ser
+			- disk_only
+			- off_heap
+			
+		ex:
+			- df.persist(StorageLevel.<level value>)
+		
+	Steps to calculate executor memory:
+		
+		- Number of nodes/machine = 10
+		- Number of cores in each node = 15 cores
+		- RAM of ech node = 61 GB
+		
+		Core:
+			- no.of cores = no.of concurrent tasks that can be run parallelly by the executor . the optimal value as part of the general rule of thumb is 5
+			
+		Executor:
+			
+			No.of executors for single node = No.of cores / concurrent task
+			
+			 = 15 / 5
+			 = 3
+			 
+			 
+			 No.of executor for total = No.of nodes * Number of executors in each node
+			 
+			 = 10 * 3
+			 = 30 executors per spark job.
+		
+	Spark and Hadoop integration:
+		
+		- HDFS:
+			- spark can configured with HDFS to leverage the distributed and replicated storage.
+			
+		- MapReduce;
+			- spark can configured with mapreduce in the same or different processing framework or hadoop cluster.
+			
+			- spark and mapreduce can used together to perform read-time and batch processing respectively.
+			
+		- YARN:
+			- it act as a cluster management framework for spark.
+	
+	
+	Sparse vector and Dense vector:
+		- It has two parallel arrays, one -> storing the indices, second -> storing the value.
+		
+		- It is used to storing the non zero values for saving space. useful when there are very few non-zero values.
+		
+		- ex: val sparseVel = Vectors.sparse(5<size>, Array(0,4), Array(1.0, 2.0))
+		
+		- Dense vector:
+			- val denseVec = Vectors.dense(4405d,260100d,400d,5.0,4.0,198.0,9070d,1.0,1.0,2.0,0.0)
+
+		- If there are cases that have only a few zero values, then it is recommended to use dense vectors
+		
+		- using the inappropiate vector may leads to more memory consumed and the speed of calculation.
+			
+		
+	automatic clean-ups triggered in Spark for handling the accumulated metadata:
+
+		- The clean-up tasks can be triggered automatically either by setting "spark.cleaner.ttl" parameter or writing the intermediary results on the disk.
+		
+	Caching relevant in spark streaming:
+		- Spark streaming data into batch data of x sec is called DStream.
+		
+		- These Dstream cached inot the memory. It is very useful for multiple computations. 
+		
+		- cache is done by cache() or persist() method.
+			
+		- ex: kafka -> input data stream -> steam context -> batch of input data -> caching in 2 nodes
+		
+		- Advantage:
+			- cost efficiency
+			- Time-efficient
+			- MOre jobs achieved
+			
+	Piping in spark:
+		- pipe() is allow to process RDD data using external application. 
+		
+		- Some of the time we need to use external library which not written in scala/java in that case pipe operator allow us to send the rdd data to the external application.
+		
+		- ex:
+			
+			val data = List("hi", "hello")
+			val datardd = sc.makeRDD(data)
+			
+			val sciptpath = "home/path/echo.sh"
+			
+			val pipeRDD = datardd.pipe(scriptPath)
+			pipeRDD.collect()
+			
+			Shell/echo.sh:
+				
+				echo "running shell"
+				
+				while read LINE; do 
+					echo ${LINE}
+				done
+				
+	Qn:
+		
+		1. What component processes the codes obtained by SparkSQL’s command translation?
+		
+		ans: Executor Nodes
+		
+		2. What component is present on the top of Spark Core?
+		
+		ans: SparkSQL
+		
+		3. What component leverages the fast scheduling capacity of Spark Core to run streaming analytics?
+		
+		ans : Spark Streaming
+		
+		4. State True or False: The Spark DataFrame prevails over RDD and has no feature of RDD by itself.
+		
+		ans : False -> from rdd can create another rdd.
+		
+		5. How many times faster is the Spark architecture when compared to Hadoop’s Apache Mahout?
+		
+		ans: 10
+		
+		6. By using which of the below options can the dataframe be created in Spark?
+		
+		ans: Hive table and External databases.
+		
+		7. What among the below options is the main reason for Spark’s execution speed when compared to MapReduce?
+		
+		ans: Spark has a DAG-based execution engine and supports in-memory computations.
+		
+		8. What is the Spark Driver?
+		
+		ans: SparkContext
+		
+		9. What is the correct command to submit Spark job for the scenario where you have the jar name as spark_example.jar and the class name as com.interviewbit.SparkExample.java that requires input_name and output_result as the job’s input parameters?
+		
+		ans: ./spark-submit -class 'com.interviewbit.SparkExample' -master localhost[4] spark_example.jar input_name output_result
+		
+	
+		10. What is the correct option for importing SparkContext?
+		
+		ans: import org.apache.spark.SparkContext
+		
+		11. What is true regarding SparkContext?
+		
+		ans: There can be only one active SparkContext per JVM
+		
+		12. What option is used for implementing counters or sums in Spark?
+		
+		ans: Accumulators
+		
+		13. What is true about the head method in Scala?
+		
+		ans: The head method returns the first element of the list.
+		
+		14. What data types are supported by Spark SQL and the DataFrames?
+		
+		ans: ArrayType & MapType and ObjectType & StructType
+
+		15. What option best describes this statement - “A dominant supervision platform for resources responsible for delivering scalable processes”
+		
+		ans: YARN
+		
+		
+		
+		
+		
+		
+		

@@ -2,8 +2,8 @@ Kubernetes:
 
 	- It is a orchestration engine that help to create a containers to develope, testing, deploy.
 	- Dockers advance version and has more feature, replacement for docker spam.
-	1. containerized applicaton
-	2. non containerized applicaton
+	1. containerized application
+	2. non containerized application
 	
 	Features:
 		- Open source, container orchestration, automate scaling of workloads.
@@ -45,7 +45,6 @@ Kubernetes:
 	---------------------------------
 		
 		- ps1='k8s> '
-		
 		- gcloud config set projectName.
 		- kube login.
 		- kubectl get nodes
@@ -58,7 +57,6 @@ Kubernetes:
 		- kubectl get deployments
 		- kubectl delete pod <pod-id> 
 		- kubectl get pods -l env=<test> [to search the pods = sql like "%a"]
-		-
 		
 		- apiVersion, kind, metadata, spec
 		
@@ -183,12 +181,10 @@ Kubernetes:
 
 		self-healing:
 		-------------
-		
 		- self-healing porperty ensures that the cluster always function at the optimal state by monitoring and replacing unhealthy container as per the desired configuration.
-
+		
 	Namespace:
 	----------
-	
 		- Namespace are virtual clusters backed by the same physical cluster. [it helps to create a virtual cluster in physical cluster]
 		- It mainly used for segregation.
 		
@@ -197,8 +193,7 @@ Kubernetes:
 			- same resource name can exist in different Namespace.
 			- avoid create namespace with KUBE- / kube-.
 			- Helps to group the resources. thats why it is creating the virtual cluster in physical cluster.
-			
-			
+		
 		Create Namespace:
 			- connect with kubernetes.
 			- kubectl get namespaces
@@ -208,7 +203,6 @@ Kubernetes:
 			- kubectl get pods -n hr-ns
 			- kubectl describe pod <pod name or id>
 			- kubectl describe pod <pod name or id> -n <namespace_name>
-			
 	Pods:
 		- Pod is a collection of one or more containers that operate together. 
 		- Pods are the smallest unit of execution in Kubernetes.
@@ -261,3 +255,58 @@ docker - rejected kube to support
 2. docker image
 
 3. docker container
+
+
+PODs:
+
+	- Group of containers that are deployed together on the same host. 
+	- the containers shares the same ip address inside the POD.
+	- can run multiple pods inside single pod.
+	
+	
+	POD lifecycle:
+		
+		1. yaml file with POD and container details.
+		2. submit through apiserver 
+			- kubectl apply -f filename.yaml
+		3. State:
+			- pending state: 
+				scheduler keep checking the available containers to create the POD.
+			- Running state:
+				after created the pod. the container creating..
+			- Succeeded state: Once its done successfully.
+			- Failed state:
+				If any failure occur then its failure state
+			- CrashLoopBackOff:
+				- Its keep on trying to create the containers.
+				
+	Cluster communication:
+		
+		container to container:
+			
+			- using localhost:port it is communicating each other. ex: laptop and mysql.
+			- the port number reside under the Network Namespace.
+			
+		POD to POD communication:
+			
+			- POD has its own IP and virtual ethernet device.
+			- using this ethernet it is communicating.
+			- All the pod IP address reside under the Network bridge stored place.
+			
+		Node to Node communication:
+			
+			- using IP address it used to communicate.
+			- all the NOde IP address stored in routing table.
+			- node1 take the IP address of the node2 from the routing table and then pass the information using this IP.
+			
+			https://youtu.be/gwBxmYfo3cA?si=WtiVU9W0qBMPIaAT
+			
+			
+				
+		
+		
+		
+		
+		
+		
+	
