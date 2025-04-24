@@ -1,19 +1,21 @@
 Data Structure and Algorithm:
 
 Types: 
-  . Linear
-    - Arrays
-    - Linked List
-    - Stacks
-    - Queues
-    - Hash Tables
-  . Non-Linear
-    - Trees
-    - Binary search Trees
-    - Heaps
-    - Graphs
-    - Trie
-    - Union-Find
+
+Linear => 
+  . Arrays
+  . Linked List
+  . Stacks
+  . Queues
+  . Hash Tables
+  
+Non-Linear =>
+  . Trees
+  . Binary search Trees
+  . Heaps
+  . Graphs
+  . Trie
+  . Union-Find
 
 Algorithms:
   - Sorting
