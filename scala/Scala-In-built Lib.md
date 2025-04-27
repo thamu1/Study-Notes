@@ -7,10 +7,21 @@
 
 ---
 
-### 🔢 Scala `Int` (Integer) Functions – Cheatsheet
+### 🔢 Scala `Int` (Integer) Functions:
+---------------------------------------
 
 > `Int` in Scala is a 32-bit signed integer (alias for `java.lang.Integer`).  
 > You can also use math and utility methods from `scala.math` and Java classes.
+
+### 💡 Tips
+
+| **Concept**               | **Details**                              |
+|--------------------------|-------------------------------------------|
+| `Int` is immutable        | Operations return new values              |
+| Use `BigInt`              | For very large integers                   |
+| Use `math._`              | For math operations                      |
+| Watch for integer division | `5 / 2 = 2`, not `2.5` unless cast       |
+
 
 ---
 
@@ -102,23 +113,25 @@ import scala.math._
 
 ---
 
-### 💡 Tips
-
-| **Concept**               | **Details**                              |
-|--------------------------|-------------------------------------------|
-| `Int` is immutable        | Operations return new values              |
-| Use `BigInt`              | For very large integers                   |
-| Use `math._`              | For math operations                      |
-| Watch for integer division | `5 / 2 = 2`, not `2.5` unless cast       |
-
----
 
 
 ---
 
-### ✨ Scala `String` Functions – Cheatsheet
+### ✨ Scala `String` Functions:
+--------------------------------
 
 > Strings in Scala are just Java `String`s, so you get both **Scala** and **Java-style** methods.
+
+
+### 💡 Tips
+
+| **Concept**                  | **Details**                                        |
+|-----------------------------|-----------------------------------------------------|
+| Scala Strings = Java Strings | You can use both Scala and Java methods             |
+| Strings are immutable        | All operations return new strings                   |
+| Use `StringBuilder`          | For efficient mutable string building               |
+| Multiline strings            | Use triple quotes `""" ... """`                     |
+
 
 ---
 
@@ -221,23 +234,22 @@ import scala.math._
 
 ---
 
-### 💡 Tips
-
-| **Concept**                  | **Details**                                        |
-|-----------------------------|-----------------------------------------------------|
-| Scala Strings = Java Strings | You can use both Scala and Java methods             |
-| Strings are immutable        | All operations return new strings                   |
-| Use `StringBuilder`          | For efficient mutable string building               |
-| Multiline strings            | Use triple quotes `""" ... """`                     |
-
----
-
 
 
 
 ---
 
-### 📦 Scala `ListBuffer` Operations – Cheatsheet
+### 📦 Scala `ListBuffer` Operations:
+-------------------------------------
+
+#### 💡 Tips
+
+| **Pattern**                             | **Usage**                            |
+|----------------------------------------|--------------------------------------|
+| `v.map { case(x) => x * 2 }`           | Destructuring in functional ops      |
+| `+=` vs `+=:`                          | Add to end vs beginning              |
+| `+` vs `++`                            | Single vs multiple values            |
+
 
 #### 🔹 Create and Add Elements
 
@@ -328,24 +340,23 @@ import scala.math._
 
 ---
 
-#### 💡 Tips
-
-| **Pattern**                             | **Usage**                            |
-|----------------------------------------|--------------------------------------|
-| `v.map { case(x) => x * 2 }`           | Destructuring in functional ops      |
-| `+=` vs `+=:`                          | Add to end vs beginning              |
-| `+` vs `++`                            | Single vs multiple values            |
 
 ---
 
-
-
----
-
-### 📦 Scala `Set` Operations – Cheatsheet
+### 📦 Scala `Set` Operations:
+------------------------------
 
 > `Set` is an **immutable** or **mutable** collection of unique elements.  
 > Import `scala.collection.mutable.Set` for mutable behavior.
+
+### 💡 Tips
+
+| **Concept**                     | **Details**                                  |
+|--------------------------------|----------------------------------------------|
+| **Set is unordered**           | Output order is not guaranteed               |
+| **Immutable vs Mutable**       | Use `import scala.collection.mutable.Set`    |
+| **No duplicates**              | Duplicate values are ignored                 |
+| **Functional style preferred** | Use `map`, `filter`, etc., for transformations |
 
 ---
 
@@ -450,26 +461,28 @@ import scala.math._
 
 ---
 
-### 💡 Tips
-
-| **Concept**                     | **Details**                                  |
-|--------------------------------|----------------------------------------------|
-| **Set is unordered**           | Output order is not guaranteed               |
-| **Immutable vs Mutable**       | Use `import scala.collection.mutable.Set`    |
-| **No duplicates**              | Duplicate values are ignored                 |
-| **Functional style preferred** | Use `map`, `filter`, etc., for transformations |
 
 ---
 
 
-
-
-### 🗺️ Scala `mutable.Map` Operations – Cheatsheet
+### 🗺️ Scala `mutable.Map` Operations:
+--------------------------------------
 
 > Import mutable map:
 ```scala
 import scala.collection.mutable.Map
 ```
+
+### 💡 Tips
+
+| **Concept**                   | **Details**                                             |
+|------------------------------|----------------------------------------------------------|
+| `Map` keys are unique        | Adding a key again will overwrite its value              |
+| Mutable vs Immutable         | Use `mutable.Map` for in-place updates                   |
+| Pattern matching on `(k, v)` | Useful in `map`, `filter`, `collect`, etc.               |
+| `getOrElseUpdate`            | Add key with default if not exists                       |
+| `clone`                      | For copying current map                                  |
+
 
 ---
 
@@ -560,25 +573,25 @@ import scala.collection.mutable.Map
 
 ---
 
-### 💡 Tips
-
-| **Concept**                   | **Details**                                             |
-|------------------------------|----------------------------------------------------------|
-| `Map` keys are unique        | Adding a key again will overwrite its value              |
-| Mutable vs Immutable         | Use `mutable.Map` for in-place updates                   |
-| Pattern matching on `(k, v)` | Useful in `map`, `filter`, `collect`, etc.               |
-| `getOrElseUpdate`            | Add key with default if not exists                       |
-| `clone`                      | For copying current map                                  |
-
----
-
 
 
 ---
 
 ## 🔄 `scala.collection.mutable.Queue`
+-------------------------------------
 
 > FIFO (First In, First Out) – Elements are added at the end and removed from the front.
+
+
+### 💡 Tips
+
+| **Concept**               | **Details**                                          |
+|--------------------------|-------------------------------------------------------|
+| Queue = FIFO              | First in, first out – used for scheduling             |
+| Stack = LIFO              | Last in, first out – used for undo/history            |
+| Both are mutable          | Use when needing in-place modification                |
+| `.toList`, `.toArray`     | Convert to immutable collections                      |
+
 
 ### ✅ Create & Modify Queue
 
@@ -609,6 +622,7 @@ import scala.collection.mutable.Map
 ---
 
 ## 📚 `scala.collection.mutable.Stack`
+---------------------------------------
 
 > LIFO (Last In, First Out) – Last added is the first to be removed.
 
@@ -648,17 +662,6 @@ import scala.collection.mutable.Map
 | `q.exists(_ == 3)`                 | Check existence                        | `q.exists(_ == 3)`                         |
 | `q.forall(_ > 0)`                  | All match condition                    | `q.forall(_ > 0)`                          |
 | `q.sum`, `q.max`, `q.min`          | Aggregate values                       | `q.sum` → sum of elements                  |
-
----
-
-### 💡 Tips
-
-| **Concept**               | **Details**                                          |
-|--------------------------|-------------------------------------------------------|
-| Queue = FIFO              | First in, first out – used for scheduling             |
-| Stack = LIFO              | Last in, first out – used for undo/history            |
-| Both are mutable          | Use when needing in-place modification                |
-| `.toList`, `.toArray`     | Convert to immutable collections                      |
 
 ---
 
