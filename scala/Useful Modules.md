@@ -14,7 +14,7 @@
 10. TreeSet()
 11. TreeMap()
 
-## scala.io.\_
+## scala.io._
 
 1. Source
 
@@ -42,7 +42,7 @@
    * encoder
    * name
 
-## scala.math.\_
+## scala.math._
 
 * E
 * Pi
@@ -60,7 +60,7 @@
 * cbrt(x)
 * random()
 
-## scala.util.\_
+## scala.util._
 
 * Random
 
@@ -79,7 +79,15 @@
      - break()
      - continue
 
+import java.time
+-----------------
 
+  - `val date = LocalDate.now()`                          
+  - `val time = LocalTime.now()`                          
+  - `val dt = LocalDateTime.now()`                        
+  - `val d = Duration.between(t1, t2)`                    
+  - `val p = Period.ofDays(5)`                            
+  - `val fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd")`
 
 
 
@@ -153,19 +161,6 @@
 | `Set`       | `val s = Set(1, 2, 3)`                             | Immutable set              |
 | `SortedMap` | `val sm = SortedMap(3 -> "c", 1 -> "a", 2 -> "b")` | Immutable sorted map       |
 | `SortedSet` | `val ss = SortedSet(3, 1, 2)`                      | Immutable sorted set       |
-
----
-
-### 🔧 `scala.util._`
-
-| Component       | Example Code                                    | Description                   |
-| --------------- | ----------------------------------------------- | ----------------------------- |
-| `Random`        | `val r = new Random(); r.nextInt(100)`          | Random number generator       |
-| `nextBoolean()` | `r.nextBoolean()`                               | Random boolean                |
-| `nextString()`  | `r.nextString(5)`                               | Random string                 |
-| `Breaks`        |                                                 | For simulating break in loops |
-| `breakable`     | `breakable { for (...) { if (cond) break() } }` | Exits loop early              |
-| `break()`       | `break()`                                       | Break out of the loop         |
 
 ---
 
