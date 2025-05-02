@@ -1,5 +1,88 @@
 
 
+## scala.collection.mutable._
+
+1. ListBuffer()
+2. ArrayBuffer()
+3. HashMap(key -> value)
+4. HashSet()
+5. Map(key -> value)
+6. MutableList()
+7. Queue()
+8. Seq()
+9. Set()
+10. TreeSet()
+11. TreeMap()
+
+## scala.io.\_
+
+1. Source
+
+   * fromFile(file\:File)
+   * fromInputStream(is\:InputStream)
+   * fromString(s\:String)
+   * fromURI(uri: URI)
+   * fromURL(url: URL)
+
+2. StdIn
+
+   * readBoolean()
+   * readByte()
+   * readChar()
+   * readDouble()
+   * readFloat()
+   * readInt()
+   * readLine()
+   * readLong()
+   * readShort()
+
+3. Codec(charSet: Charset)
+
+   * decoder
+   * encoder
+   * name
+
+## scala.math.\_
+
+* E
+* Pi
+* max(x, y)
+* min(x, y)
+* ceil(x)
+* floor(x)
+* round(x)
+* exp(x)
+* log(x)
+* log10(x)
+* pow(x, y)
+* abs(x)
+* sqrt(x)
+* cbrt(x)
+* random()
+
+## scala.util.\_
+
+* Random
+
+  1. new Random(seed)
+  2. nextBoolean()
+  3. nextByte()
+  4. nextDoble()
+  5. nextFloat()
+  6. nextInt(n)
+  7. nextLong()
+  8. nextString(length)
+
+* Breaks
+
+  - breakable
+     - break()
+     - continue
+
+
+
+
+
 ### 📦 `scala.collection.mutable._`
 
 | Type          | Example Code                               | Description               |
