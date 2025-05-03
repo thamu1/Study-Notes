@@ -170,7 +170,20 @@ Replica:
   - Follwer Sync data : Follower replicas sync data with the leader to stay-up-to-date.
 
 
-   
+Schema:
+--------
+  - Structure of your data. Specifies the field, their data types and any constrints of the data.
+  - MetaData is used for `Serialization and DeSerialization`
+  - The Schema information will be stored in the Schema registry.
+  - While sending the msg(Topic) the Schema-information-UniqueId will also send along with msg.
+  - Consumer access the Schema information from Schema Registry using UniqueId.
+
+  ##Pros##:
+    - Compactness : 
+
+<img width="1597" alt="image" src="https://github.com/user-attachments/assets/65cb183e-5ad7-46f8-a0fb-619a1ad3657c" />
+
+
 
   
   
