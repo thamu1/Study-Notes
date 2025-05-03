@@ -115,6 +115,69 @@ Event Payload vs Event Metadata:
 
   <img width="713" alt="Event payload and Event metadata" src="https://github.com/user-attachments/assets/be836943-b03e-4747-b6c0-016a109b99de" />
 
+Kafka API:
+----------
+  - Producer API : sends msg to kafka
+  - Consumer API : reads msg from kafka
+  - Stream API : Read, Transform/change the Topic/Msg
+  - Connect API : Used to connect with External System.
+
+Kafka Cluster:
+---------------
+
+  - Group of Broker/server working together.
+  - It store and manage streams of data(topic) in a distributed.
+  - It has multiple brokers(server) for fault tolerance and scalability.
+  - Brokers(servers) commnicate with each other to ensure data consistency and availability.
+
+Kafka Architecture:
+-------------------
+
+  - Kafka cluster can be deployed in On-Premises or in the cloud.
+  - Kafka manager tool used to manage and monitor cluster health.
+  - Kafka uses `Zookeeper` for managing cluster. Client can discover brokers by Zookeeper.
+  - Kafka Broker(Server) use disk storage for persistent msg storage.
+  - topics are divided into partitions spread across brokers for parellel processing.
+  - Clients(producer and consumers) connect to any borker in the cluster.
+  - Cluster can be expanded by adding more brokers(server) or Partitions.
+
+Topic:
+------
+  - Think of a Kafka Topic as a Virtual Mailbox or folder where messages(like mails) are stored and organized.
+
+  Eg: Kafka (Whole Library) -> Topic (Book category)
+  
+  - Distributed:
+    - Kafka Topic `Distributed across multiple brokers` in a kafka cluster, ensuring scalability and Fault tolerance.
+      
+  - Partitioned:
+    - Topic can be `partitioned into multiple partitions`, allowing parallel processing and efficient data storage.
+
+  - Ordered:
+    - Messages within partition are strictly ordered by their offset(Unique ID), ensuring message order within a partition.
+   
+  - Persistent:
+    - Messages in kafka topic are stored on disk, allowing them to be retained even after consumer have processed them.
+    - Based on Confiuration.
+    - Different type of Msg file (JSON, Avro etc)
+   
+Replica:
+---------
+  - Kafka replica are copies of data stored across multiple servers/Brokers in the Kafka cluster.
+  - Enable: Fault tolerance
+  - Leader Replica Model : Each partition in kafka has one leader replica and one or more follower replica.
+  - Leader Handles writes : Leader handle all write request for partition and replicate data to followers.
+  - Follwer Sync data : Follower replicas sync data with the leader to stay-up-to-date.
+
+
+   
+
+  
+  
+  
+  
+  
+
 
 
   
