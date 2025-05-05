@@ -177,18 +177,128 @@ Schema:
   - The Schema information will be stored in the Schema registry.
   - While sending the msg(Topic) the Schema-information-UniqueId will also send along with msg.
   - Consumer access the Schema information from Schema Registry using UniqueId.
-
-  ##Pros##:
-    - Compactness : 
+ 
 
 <img width="1597" alt="image" src="https://github.com/user-attachments/assets/65cb183e-5ad7-46f8-a0fb-619a1ad3657c" />
 
 
+Consumer Group Coordinator/Manager:
+-----------------------------------
+  - Consumer Group : one or more consumer group together to consume msg paralelly. (Increase Through put)
+  - Consumer Group Coordinator : Responsible for managing consumer Group.
+    - **Coordinator** : Assignment of Partitions to consumers. Ensure 1 Consumer = 1 partition.
+    - **Load Balancing** : Redistribute partitions among consumers, When new partition added to topic.
+    - **Rebalancing** : Fair/evenly distribute the partitions to consumers available in Consumer Group.
+    - **Fault Tolerance** : It handle failures within group. Detect when consumer join or leave the group and Orchestrating the rebalancing process accordingly.
+ 
 
+How Kafka Handle Hige volume of data:
+-------------------------------------
+  - **Distributed Architecture** : Spareading data across `multiple server` called Broker
+  - **Partitioning** : Data Divided into `Multiple Partition`, Allowing parallel processing and scalability.
+  - **Replication** : Each partition Has `multple Replicas`, Data redendancy and Fault tolerance.
+  - Batching and Compression : Msgs are `Batch together` and `Compress` them. Reduce Network overhead and improve throughput.
+  - **Produceer and Consumer scaling** : Kafka Support `Horizontal Scaling (adding more system)`, Allows producers and Consumers to be added or removed dynamically to handle varying data load.
+  - **Low latency **: Stream data directly to Consumers without waiting for `ack from all replica`
+  - **Efficient Fetching** : Consumer fetch msg efficiently using `Offset (unique ID)`. Enabling them  to process data at their own pace without overwhelming the system.
+  - **Monitoring and Tuning** : Kafka provide tool for monitor `Cluster Health and Performance`, Allowing operators to `identify bottlenecks and optimize configurations` for High volumne of data handling.
+
+ 
+
+## ✅ **Kafka Producer Configuration**
   
+  Defines how the producer interacts with Kafka brokers when publishing messages.
   
+  🔌 `bootstrap.servers`
+    * List of broker addresses for initial connection.
+    * Example: `kafka.example1.com:9092,kafka.example2.com:9092`
   
+  🧾 `acks`
+    * Controls message durability guarantee:
+      * `0`: No acknowledgment (fastest, not durable)
+      * `1`: Leader acknowledgment only (default, balances durability & latency)
+      * `all` / `-1`: Wait for all in-sync replicas (strongest durability)
+    
+  📦 `batch.size`
+    * Max size (in bytes) of a batch before sending to the broker.
+    * Helps with efficiency by batching multiple records together.
   
+  ⏱️ `linger.ms`
+    * Max time to wait before sending a batch, even if it's not full.
+    * Introduces a small delay to allow more records to batch, improving throughput.
+  
+  🗜️ `compression.type`
+    * Compress messages to save bandwidth and storage:
+      * Options: `none`, `gzip`, `snappy`, `lz4`, `zstd`
+      * `zstd` offers best compression ratio & speed (if broker supports it).
+  
+  🔁 `retries`
+    * Number of retry attempts if a transient error occurs while sending.
+  
+  💥 `retry.backoff.ms`
+    * Time (ms) to wait between retries.
+  
+  📶 `client.id`
+    * Logical name for the producer, useful for logging and metrics.
+    
+  💡 `key.serializer` / `value.serializer`
+    * Defines how Kafka will serialize the key and value of the message.
+    * Common: `org.apache.kafka.common.serialization.StringSerializer`, `ByteArraySerializer`
+  
+
+## ✅ **Kafka Consumer Configuration**
+
+Defines how the consumer reads and processes data from topics.
+
+ 🔌 `bootstrap.servers`
+  * Initial list of Kafka brokers to connect to.
+
+👥 `group.id`
+  * Unique identifier for a consumer group.
+  * Consumers with the same group ID share message consumption.
+
+🔁 `enable.auto.commit`
+  * If `true`, consumer automatically commits offsets.
+
+⏱️ `auto.commit.interval.ms`
+  * Frequency of offset commits if auto-commit is enabled.
+
+📜 `auto.offset.reset`
+  * Defines what to do when there’s no valid offset:
+    * `earliest`: Start from beginning of the topic
+    * `latest`: Start from the latest message
+    * `none`: Throw error if no offset found
+
+🎯 `key.deserializer` / `value.deserializer`
+  * Defines how Kafka should deserialize the message key/value.
+
+📥 `max.poll.records`
+  * Max number of records returned in a single poll.
+
+📉 `fetch.min.bytes`
+  * Minimum data size to fetch per request.
+
+🕰️ `fetch.max.wait.ms`
+  * Max time consumer waits for data to accumulate before returning a fetch response.
+
+🚦 `max.partition.fetch.bytes`
+  * Max bytes fetched from each partition.
+
+🧠 `session.timeout.ms` / `heartbeat.interval.ms`
+  * `session.timeout.ms`: Time before broker detects consumer failure.
+  * `heartbeat.interval.ms`: Interval to send heartbeats to broker.
+
+🧹 `isolation.level`
+  * Controls visibility of transactional messages:
+    * `read_uncommitted`: Read all messages (default)
+    * `read_committed`: Only read messages from committed transactions
+
+📶 `client.id`
+  * Logical name for the consumer; useful for logging and monitoring.
+
+
+
+
   
 
 
