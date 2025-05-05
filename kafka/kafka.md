@@ -5,6 +5,16 @@ Apache Kafka:
   - Designed to handle High throughput, Low latency data streaming across distributed system.
   - Published and Subscriber Architecture.
 
+  <img width="1787" alt="image" src="https://github.com/user-attachments/assets/fa10a08e-d5ce-46b5-af09-c1b990070f53" />
+
+
+  <img width="1791" alt="image" src="https://github.com/user-attachments/assets/d8a23d9c-ab92-4c7e-afde-05034b47de2d" />
+
+  <img width="1290" alt="image" src="https://github.com/user-attachments/assets/9aa8f0f0-98ff-42e4-9ff7-0a16c779f656" />
+
+
+
+
 Use cases:
 -----------
   - real Time analytics
