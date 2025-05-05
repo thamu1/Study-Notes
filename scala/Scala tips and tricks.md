@@ -1,7 +1,8 @@
 
-Resource 
-  Git : https://github.com/rockthejvm
-  Youtube : https://www.youtube.com/@rockthejvm
+Resource
+---------
+  - Git : https://github.com/rockthejvm
+  - Youtube : https://www.youtube.com/@rockthejvm
 
 
 Scala Pattern Matching:
@@ -9,6 +10,7 @@ Scala Pattern Matching:
 
 **Switch on steriods**
 
+```
 object test 
 {
     var n = 2
@@ -18,10 +20,10 @@ object test
             case _ => "nothing"
         }
 }
-
+```
 
 **Type Matching**
-
+```
 def func():Any = 45
 
 val findType = func() match {
@@ -38,10 +40,10 @@ val obj = Person("thamu", 23)
 val a = obj match{
             case p @ Person(n, a) => f"${n} and ${a}"  // `p` referencing `Person(n, a)`
         }
-
+```
 
 **Conditional Guards**
-
+```
 val n = 1
 val a = n match{
             case 1 => "first"
@@ -54,7 +56,7 @@ val m = l match{
             case List(1, _, 3, _*) => "Found expected" // _* : Remaining all element.
             case _ => "Unexpected"
         }
-
+```
 
 **Contravriance:**
 
