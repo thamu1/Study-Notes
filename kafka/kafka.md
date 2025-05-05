@@ -199,7 +199,7 @@ How Kafka Handle Hige volume of data:
   - **Replication** : Each partition Has `multple Replicas`, Data redendancy and Fault tolerance.
   - Batching and Compression : Msgs are `Batch together` and `Compress` them. Reduce Network overhead and improve throughput.
   - **Produceer and Consumer scaling** : Kafka Support `Horizontal Scaling (adding more system)`, Allows producers and Consumers to be added or removed dynamically to handle varying data load.
-  - **Low latency **: Stream data directly to Consumers without waiting for `ack from all replica`
+  - **Low latency** : Stream data directly to Consumers without waiting for `ack from all replica`
   - **Efficient Fetching** : Consumer fetch msg efficiently using `Offset (unique ID)`. Enabling them  to process data at their own pace without overwhelming the system.
   - **Monitoring and Tuning** : Kafka provide tool for monitor `Cluster Health and Performance`, Allowing operators to `identify bottlenecks and optimize configurations` for High volumne of data handling.
 
