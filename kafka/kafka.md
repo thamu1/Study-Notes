@@ -7,6 +7,7 @@ Apache Kafka:
 
   <img width="1787" alt="image" src="https://github.com/user-attachments/assets/fa10a08e-d5ce-46b5-af09-c1b990070f53" />
 
+  <img width="1039" alt="Screenshot 2025-05-05 at 5 15 48 PM" src="https://github.com/user-attachments/assets/206b6614-d102-4192-9300-1ccf24fed1af" />
 
   <img width="1791" alt="image" src="https://github.com/user-attachments/assets/d8a23d9c-ab92-4c7e-afde-05034b47de2d" />
 
