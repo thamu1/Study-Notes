@@ -76,6 +76,42 @@ val m = l match{
   <img width="790" alt="image" src="https://github.com/user-attachments/assets/ef11dd7f-e51b-4cb9-9cdd-5051a19ef2ad" />
 
 
+**Looping**
+
+  <img width="622" alt="image" src="https://github.com/user-attachments/assets/fc5322ef-37cc-4d49-9c9a-240466fc1d50" />
+
+  <img width="759" alt="image" src="https://github.com/user-attachments/assets/cc7fc5ca-9343-45b2-bcdc-fbb023f7764b" />
+
+  Rule of Thumb:
+  --------------
+    - Learning Scala, Ignore Loops
+    - Teaching Scala, Stop teaching Loops!.
+
+Nothing Data Type:
+-------------------
+
+  <img width="782" alt="image" src="https://github.com/user-attachments/assets/8027fe5c-9553-412a-982c-159eed76a811" />
+
+  <img width="792" alt="image" src="https://github.com/user-attachments/assets/6f3d0ca7-4267-4641-9c93-af98881c54f7" />
+
+Call By Name:
+-------------
+
+  <img width="788" alt="image" src="https://github.com/user-attachments/assets/39a1f522-bf1a-4137-9676-8b7077ad3b99" />
+
+  <img width="747" alt="image" src="https://github.com/user-attachments/assets/12c0f012-e437-473a-a993-243c03571a9b" />
+
+Read Files:
+-----------
+
+
+
+
+
+ 
+
+
+
 
 
 
