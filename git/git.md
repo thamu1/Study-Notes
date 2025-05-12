@@ -1,3 +1,8 @@
+
+
+<img width="1080" alt="image" src="https://github.com/user-attachments/assets/1bebb186-4d78-41a3-b3f0-6db02ff772a8" />
+
+
 git set folder:
 git config --global --add safe.directory 'D:/thamu/study Album/Study-Note'
 
