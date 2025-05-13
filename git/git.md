@@ -12,8 +12,11 @@ Flow:
 
 Basic Commands:
 ---------------
-
 	git set folder:
+		- git remote add origin <http-clone-url>
+	 	- git branch -M main
+	  - git push -u origin main
+	
 		- git config --global --add safe.directory 'D:/thamu/study Album/Study-Note'
 		- git init
 		- git clone <repository_url>
