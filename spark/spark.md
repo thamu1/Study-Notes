@@ -417,60 +417,9 @@ println(s"DataFrame size = ${size / 1000000} MB")
 
 ---
 
-
 **PySpark UDFs**, including SQL registration:
 
----
-
-## ✅ PySpark UDF – Quick Summary
-
-### 🔧 **Create and Use a UDF**
-
-```python
-from pyspark.sql.functions import udf
-from pyspark.sql.types import StringType
-
-def to_upper(s):
-    return s.upper() if s else None
-
-upper_udf = udf(to_upper, StringType())
-
-df = df.withColumn("upper_name", upper_udf("name"))
-```
-
-### 📜 **Register UDF for SQL Use**
-
-```python
-spark.udf.register("to_upper_sql", to_upper, StringType())
-
-df.createOrReplaceTempView("people")
-spark.sql("SELECT to_upper_sql(name) AS upper_name FROM people").show()
-```
-
-
-## ⚠️ **Performance Concerns**
-
-* 🚫 **Slow** – Due to JVM ↔ Python (Py4J) serialization.
-* 🚫 **No Catalyst Optimization** – Treated as a black box.
-* 🚫 **No Vectorization** – Operates row-by-row.
-
-## 🏎️ **Better Alternative: Pandas UDF**
-
-```python
-from pyspark.sql.functions import pandas_udf
-
-@pandas_udf(StringType())
-def to_upper_vec(s: pd.Series) -> pd.Series:
-    return s.str.upper()
-
-df = df.withColumn("upper_name", to_upper_vec("name"))
-```
-
-## ✅ Best Practice
-
-* 🔹 Use **built-in Spark functions** when possible.
-* 🔹 Use **Pandas UDFs** for performance.
-* 🔹 Register UDFs for **SQL compatibility** when needed.
+<img width="1752" height="2694" alt="image" src="https://github.com/user-attachments/assets/1127da7f-d1af-423c-a860-6558ff1485cf" />
 
 ---
 
