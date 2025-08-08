@@ -360,11 +360,121 @@ println(s"DataFrame size = ${size / 1000000} MB")
 ```
 
 ---
-
----
 <img width="884" height="717" alt="image" src="https://github.com/user-attachments/assets/9a40a24e-91be-4ddb-93c2-a2cc85b3b3f6" />
 
 ---
+
+*schema evolution in PySpark**:
+
+### ✅ **Schema Evolution in PySpark – Quick Notes**
+
+* **What is it?**
+  Handling changes in data schema (new/missing fields, type changes) without breaking your pipeline.
+
+### 💡 **Key Methods:**
+
+1. **Parquet/Delta – `mergeSchema` Option**
+
+   ```python
+   spark.read.option("mergeSchema", "true").parquet(path)
+   ```
+
+2. **Delta Lake – Auto Merge on Write**
+
+   ```python
+   spark.conf.set("spark.databricks.delta.schema.autoMerge.enabled", "true")
+   df.write.option("mergeSchema", "true").format("delta").save(path)
+   ```
+
+3. **Infer Schema (for JSON/CSV)**
+   Good for dev/exploration, not recommended in prod.
+
+   ```python
+   spark.read.option("inferSchema", "true").json(path)
+   ```
+
+4. **Define Flexible Schemas Manually**
+
+   ```python
+   schema = StructField("new_col", StringType(), True)  # make new fields nullable
+   ```
+   ```sql
+   schema = "new_col int, new_col2 string"
+   ```
+
+5. **Manual Schema Alignment Before Union**
+
+   * Add missing columns with `lit(None)`
+   * Use `unionByName()` after aligning
+
+### 🛠 Best Practices:
+
+* Use **Delta Lake** for evolving schemas.
+* Always set new fields as **nullable**.
+* Avoid schema inference in production.
+* Validate schemas before writing.
+* Use `unionByName()` for safe merges.
+
+---
+
+
+**PySpark UDFs**, including SQL registration:
+
+---
+
+## ✅ PySpark UDF – Quick Summary
+
+### 🔧 **Create and Use a UDF**
+
+```python
+from pyspark.sql.functions import udf
+from pyspark.sql.types import StringType
+
+def to_upper(s):
+    return s.upper() if s else None
+
+upper_udf = udf(to_upper, StringType())
+
+df = df.withColumn("upper_name", upper_udf("name"))
+```
+
+### 📜 **Register UDF for SQL Use**
+
+```python
+spark.udf.register("to_upper_sql", to_upper, StringType())
+
+df.createOrReplaceTempView("people")
+spark.sql("SELECT to_upper_sql(name) AS upper_name FROM people").show()
+```
+
+
+## ⚠️ **Performance Concerns**
+
+* 🚫 **Slow** – Due to JVM ↔ Python (Py4J) serialization.
+* 🚫 **No Catalyst Optimization** – Treated as a black box.
+* 🚫 **No Vectorization** – Operates row-by-row.
+
+## 🏎️ **Better Alternative: Pandas UDF**
+
+```python
+from pyspark.sql.functions import pandas_udf
+
+@pandas_udf(StringType())
+def to_upper_vec(s: pd.Series) -> pd.Series:
+    return s.str.upper()
+
+df = df.withColumn("upper_name", to_upper_vec("name"))
+```
+
+## ✅ Best Practice
+
+* 🔹 Use **built-in Spark functions** when possible.
+* 🔹 Use **Pandas UDFs** for performance.
+* 🔹 Register UDFs for **SQL compatibility** when needed.
+
+---
+
+
 
 
 
