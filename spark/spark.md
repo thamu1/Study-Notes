@@ -424,6 +424,13 @@ println(s"DataFrame size = ${size / 1000000} MB")
 ---
 
 
+To avoid creating Temp view on top of DF
+
+
+spark.sql( " select * from {customer} ", customer= cdf )
+
+---
+
 
 
 
