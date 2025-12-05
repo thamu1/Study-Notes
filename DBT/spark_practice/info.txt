@@ -1,0 +1,80 @@
+
+Reference:
+
+    . cheat sheet : https://medium.com/indiciumtech/17-dbt-commands-you-should-start-using-today-581998dbf8f0
+
+1. need to start the spark thrift server
+
+spark-submit \
+--master 'local[*]' \
+--conf spark.executor.extraJavaOptions=-Duser.timezone=Etc/UTC \
+--conf spark.eventLog.enabled=false \
+--conf spark.sql.warehouse.dir=~/spark/sparkwarehouse \
+--class org.apache.spark.sql.hive.thriftserver.HiveThriftServer2 \
+--name "Thrift JDBC/ODBC Server" \
+--executor-memory 512m
+
+2. Beeline:
+
+ > beeline -u jdbc:hive2://localhost:10000/
+
+ or 
+
+ > beeline
+ > !connect jdbc:hive2://localhost:10000/
+ > username > tchand19
+ > password > tchand19
+
+
+3. source dbt_pyenv/bin/activate && cd test/spark_practice
+
+4. create macro for DDL(create, insert, update, delete, alter etc..) operation:
+
+    macro/factory.sql 
+
+    {% macro create_db(db_name) %} -- 
+        {% set query %}
+            create database if not exists {{db_name}} -- Place your query here.
+        {% endset %}
+
+        {% if execute %}
+            {% do run_query(query) %}
+        {% endif %}
+
+    {% endmacro%}
+
+    dbt run-operation create_db --args '{db_name: shop}'
+
+
+5. dbt external test: 
+
+    macro/tests/unique_check.sql
+
+    {% test unique_check(model, column_name) %}
+
+        select product_name
+            , category
+            , count(1) as cnt 
+        from  {{model}} -- default.dim_product_details
+        group by 1, 2 having count(1) > 1
+
+    {% endtest %} 
+
+    -> Include in you model 
+
+        - name: model_name (basically sql file name)
+          tests:
+            - <your-test-name> (unique_check)
+              arguments
+          columns:
+            - name: <col-name>
+              data_test/tests:
+                - unique 
+                - not_null
+                - <your-test-name> (unique_check)
+                  arguments
+
+
+
+
+

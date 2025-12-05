@@ -1,0 +1,58 @@
+version : 1
+
+models:
+
+  - name : 'create_db'
+    description: "creating DB"
+
+  - name: dim_shop_details
+    description: "create dim_shop_details table with some table"
+
+    tests:
+      - false_check
+      - false_check_with_arg:
+          flag : no
+
+
+    columns:
+      - name: shop_id 
+        description: "The primary key for this table"
+        data_tests:
+          - unique
+          - not_null
+
+  - name: dim_product_details
+    description: "create dim_product_details table with some table"
+
+    columns:
+      - name: product_id 
+        description: "The primary key for this table"
+        tests:
+          - unique
+          - not_null
+          - unique_check:
+              a : 2
+              b : 2
+            
+          # - accepted_values:
+          #     arguments: # available in v1.10.5 and higher. Older versions can set the <argument_name> as the top-level property.
+          #       values: ['placed', 'shipped', 'completed', 'returned']
+          # - relationships:
+          #     arguments:
+          #       to: ref('customers')
+          #       field: id
+          
+      # - name: launch_date
+      #   tests:
+      #       - unique_check
+
+
+
+sources:
+  - name: shop
+    schema: default
+    tables:
+      - name: dim_shop_details
+
+  
+
