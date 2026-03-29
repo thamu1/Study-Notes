@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front-deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front-deployment-pod
+  template:
+    metadata:
+      labels:
+        app: front-deployment-pod
+    spec:
+      containers:
+        - name: front-deployment-container
+          image: simplybyte/simplybyte-ui:3.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              mountPath: /usr/share/nginx/html/src/assets/config.json
+              subPath: config.json
+
+      volumes:
+        - name: config
+          configMap:
+            name: front-config

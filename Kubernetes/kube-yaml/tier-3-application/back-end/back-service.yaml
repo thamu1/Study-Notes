@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: back-service
+  labels:
+    app: back-service
+spec:
+  # NodePort 30080 matches the frontend config.json userService URL
+  type: NodePort
+  selector:
+    app: back-deployment-pod
+  ports:
+    - name: http
+      port: 8090
+      targetPort: 8090
+      nodePort: 30080

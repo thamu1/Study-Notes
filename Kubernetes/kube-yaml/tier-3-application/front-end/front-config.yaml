@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: front-config
+data:
+  config.json: |
+    {
+      "userService": "http://localhost:30080",
+      "utilService": "http://localhost/util/"
+    }

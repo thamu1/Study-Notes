@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-write
+spec:
+  # Targets only the primary pod (simplybyte-mysql-0) using the stable pod-name label
+  # Use this for write-heavy clients that must always hit the primary
+  selector:
+    statefulset.kubernetes.io/pod-name: simplybyte-mysql-0
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

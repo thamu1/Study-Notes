@@ -1,0 +1,31 @@
+# PV for simplybyte-mysql-0 (primary)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: db-pv-0
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /data/mysql-0
+    type: DirectoryOrCreate
+---
+# PV for simplybyte-mysql-1 (replica)
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: db-pv-1
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /data/mysql-1
+    type: DirectoryOrCreate

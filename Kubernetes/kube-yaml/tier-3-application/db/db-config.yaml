@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config
+data:
+  # Applied to mysql-0 (primary): enables binary logging for replication
+  primary.cnf: |
+    [mysqld]
+    log-bin=mysql-bin
+    binlog_format=ROW
+    gtid_mode=ON
+    enforce_gtid_consistency=ON
+    log_replica_updates=ON
+    sync_binlog=1
+    innodb_flush_log_at_trx_commit=1
+    max_connections=200
+
+  # Applied to mysql-1+ (replicas): read-only, follows primary via GTID
+  replica.cnf: |
+    [mysqld]
+    super-read-only=ON
+    log-bin=mysql-bin
+    binlog_format=ROW
+    gtid_mode=ON
+    enforce_gtid_consistency=ON
+    log_replica_updates=ON
+    relay_log=relay-bin
+    max_connections=200
+
+  # Runs once on primary's first boot to create replication user and application DB
+  init.sh: |
+    #!/bin/bash
+    set -ex
+    [[ $(hostname) =~ -([0-9]+)$ ]] && ordinal=${BASH_REMATCH[1]}
+    # Only primary (ordinal 0) needs to create the replication user
+    if [[ $ordinal -eq 0 ]]; then
+      mysql -uroot -p"${MYSQL_ROOT_PASSWORD}" <<-EOSQL
+        CREATE USER IF NOT EXISTS 'repl'@'%' IDENTIFIED BY '${MYSQL_REPLICATION_PASSWORD}';
+        GRANT REPLICATION SLAVE ON *.* TO 'repl'@'%';
+        CREATE DATABASE IF NOT EXISTS simplybyte;
+        CREATE USER IF NOT EXISTS 'simplybyte'@'%' IDENTIFIED BY 'AppP@ssw0rd!';
+        GRANT ALL PRIVILEGES ON simplybyte.* TO 'simplybyte'@'%';
+        FLUSH PRIVILEGES;
+    EOSQL
+    fi

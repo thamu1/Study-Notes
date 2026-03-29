@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back-deployment
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back-deployment-pod
+  template:
+    metadata:
+      labels:
+        app: back-deployment-pod
+    spec:
+      containers:
+        - name: back-deployment-container
+          image: simplybyte/simplybyte-backend:1.0
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 8090
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql-0.mysql:3306/simplybyte"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "simplybyte"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: mysql-app-password
