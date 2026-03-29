@@ -55,7 +55,9 @@ Deployments:
     > kubectl get deployments
     > kubectl describe deployment mysql-deployment
     > kubectl delete deployment mysql-deployment
+    > kubectl set image deployment mysql-deployment  mysql-container=mysql:8.9
     > kubectl rollout history deployment mysql-deployment
+    > kubectl rollout status deployment mysql-deployment
     > kubectl rollout undo deployment mysql-deployment --to-revision=1
 
     > kubectl exec -it mysql-pod -- sh # Access the shell of the pod
