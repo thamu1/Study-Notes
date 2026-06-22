@@ -194,6 +194,139 @@ select 1 as placeholder
 ---------------------------------------------------------------------------------------------------------------------
 
 
+# Pipeline Log Macro:
+---------------------
+
+.macros/log_pipeline_run.sql:
+-----------------------------
+
+{% macro test() %}
+
+  {% set args = invocation_args_dict if invocation_args_dict is defined else {} %}
+  {% set pipeline_name = args.get('project_dir', '') %}
+
+  {% set parsed_pipeline_name = pipeline_name.split('/')[4]  %}
+
+  {% set model_name = args.get('select', args.get('models', 'n/a'))[0] %}
+
+  {{ log("parsed Pipeline Name:::::::::::: " ~ parsed_pipeline_name, info= True) }}
+
+  {{ log("Model Name :::::::::::: " ~ model_name, info= True) }}
+
+  {% for result in results %}
+      {{ log(
+          "Model Statua =>>>> " ~ result.node.name ~
+          " -> " ~ result.status,
+          info=True
+      ) }}
+  {% endfor %}
+
+{% endmacro %}
+
+#}
+
+{% macro log_pipeline_start() %}
+
+  {% set args = invocation_args_dict if invocation_args_dict is defined else {} %}
+  {% set model_name = args.get('select', ('na',))[0] %}
+  {% set pipeline_name_raw = args.get('project_dir', '') %}
+
+  {{ log("Pipeline Name Raw:::: " ~ pipeline_name_raw, info=True) }}
+
+  {% set pipeline_name = pipeline_name_raw.split('/')[4] %}
+
+  {% set create_schema_sql %}
+    CREATE SCHEMA IF NOT EXISTS {{ target.database }}.LOAD
+  {% endset %}
+
+  {% set create_table_sql %}
+  
+    CREATE TABLE IF NOT EXISTS {{ target.database }}.LOAD.SMARTFACTS_PROCESS_LOG (
+        BATCH_DATE DATE,
+        PIPELINE_ID VARCHAR(100),
+        PIPELINE_NAME VARCHAR(100),
+        PIPELINE_STARTED_AT TIMESTAMP_NTZ(9),
+        PIPELINE_ENDED_AT TIMESTAMP_NTZ(9),
+        STATUS VARCHAR(50)
+    );
+
+  {% endset %}
+
+
+  {% set insert_sql %}
+    INSERT INTO {{ target.database }}.LOAD.SMARTFACTS_PROCESS_LOG (BATCH_DATE, PIPELINE_ID, PIPELINE_NAME, PIPELINE_STARTED_AT, PIPELINE_ENDED_AT, STATUS)
+    SELECT CURRENT_DATE, '{{ invocation_id }}', '{{ pipeline_name }}' || '@' || '{{ model_name }}', CURRENT_TIMESTAMP(), NULL, 'in_progress'
+  {% endset %}
+
+
+  {% if execute %}
+    {% do run_query(create_schema_sql) %}
+    {% do run_query(create_table_sql) %}
+    {% do run_query(insert_sql) %}
+  {% endif %}
+
+{% endmacro %}
+
+
+
+
+{% macro log_pipeline_end() %}
+
+  {% set update_sql %}
+    UPDATE {{ target.database }}.LOAD.SMARTFACTS_PROCESS_LOG
+    SET PIPELINE_ENDED_AT = CURRENT_TIMESTAMP(), STATUS = 'completed'
+    WHERE PIPELINE_ID = '{{ invocation_id }}'
+  {% endset %}
+
+  {% if execute %}
+    {% do run_query(update_sql) %}
+  {% endif %}
+
+{% endmacro %}
+
+
+dbt_project.yml
+---------------
+
+...
+# models in models folder will be rendered to the schema
+models:
+  volvo_dbt:
+    +database: DB_Name
+    +persist_docs:
+      relation: true
+      columns: true
+
+    risk_registry:
+      +tags: ["risk_registry"]
+      load:
+        +schema: load
+        +materialized: table
+      stage:
+        +schema: stg
+        +materialized: table
+      psa:
+        +schema: psa
+        +materialized: table
+      trf:
+        +schema: trf
+        +materialized: view
+      dm:
+        +schema: dm
+        +materialized: table
+
+
+# If run results are enabled then keep it. If kept then make sure `enable_logging: true` in the dbt_config of the airflow DAG definition
+on-run-start:
+  - "{{ log_pipeline_start() }}" # ./macros/log_pipeline_run.sql
+
+on-run-end:
+  - "{{ log_pipeline_end() }}" # ./macros/log_pipeline_run.sql
+  - "{{ vcc_dbt.log_dbt_results(results) }}"
+
+
+---------------------------------------------------------------------------------------------------------------------
+
 
 
 
