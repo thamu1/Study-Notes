@@ -73,7 +73,25 @@
     * Insert anomaly: cannot add a teacher until a course exists
     * Update anomaly: teacher name must be changed in many rows
     * Delete anomaly: deleting the last course also deletes the teacher information
-* BCNF, 4NF, and 5NF are advanced forms used for special dependency problems; learn 1NF to 3NF first for most interviews
+* BCNF (Boyce-Codd Normal Form): every column that determines another column must be a candidate key
+    * Simple meaning: only a key should decide other data
+    * Bad table: `StudentID | CourseID | TeacherID` where each `TeacherID` teaches only one `CourseID`
+    * `TeacherID -> CourseID`, but `TeacherID` is not a key because many students can have the same teacher
+    * Better: move the dependency to `TeacherCourses(TeacherID, CourseID)` and keep student assignments in `StudentTeachers(StudentID, TeacherID)`
+    * BCNF is stricter than 3NF and fixes some dependency problems that 3NF can still allow
+* 4NF (Fourth Normal Form): one table should not contain two or more independent multi-value facts about the same item
+    * Simple meaning: do not mix two separate lists in one table
+    * Bad table: `StudentID | Hobby | Language`
+    * If Ravi has 2 hobbies and speaks 2 languages, the table may store 4 rows: every hobby combined with every language
+    * Better: `StudentHobbies(StudentID, Hobby)` and `StudentLanguages(StudentID, Language)`
+    * 4NF removes unnecessary combinations caused by independent multi-valued relationships
+* 5NF (Fifth Normal Form): split a table when a three-way or larger relationship can be safely rebuilt from smaller relationships without creating false rows
+    * Simple meaning: store only relationships that are really needed; do not keep a complicated relationship when smaller tables are enough
+    * Bad table: `SupplierPartProject(SupplierID, PartID, ProjectID)` when a supplier's ability to supply a part and a project's need for that part are independent facts
+    * Better: store the smaller relationships in `SupplierParts(SupplierID, PartID)` and `ProjectParts(ProjectID, PartID)`; add `SupplierProjects(SupplierID, ProjectID)` only if that relationship is also independently required
+    * Rebuild the original three-way result with joins only when the business rule guarantees that the combinations are valid
+    * 5NF helps prevent false combinations, called spurious rows, after joining decomposed tables
+* Easy memory rule: 1NF = one value per cell; 2NF = depends on the whole key; 3NF = depends only on the key; BCNF = every determinant is a key; 4NF = separate independent lists; 5NF = safely split complex relationships
 * Normalization does not mean “make as many tables as possible”; split tables when it improves correctness, then join them with keys
 
 ## MySQL Essentials
