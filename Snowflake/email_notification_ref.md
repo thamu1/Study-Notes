@@ -1,5 +1,23 @@
 Email Notification From Snowflake Notification Service:
 -------------------------------------------------------
+
+```sql
+
+SHOW USERS;
+
+
+SELECT 
+    user_id, name, login_name, email, type, is_email_verified, DISABLED
+FROM snowflake.ACCOUNT_USAGE.USERS
+WHERE EMAIL IS NOT NULL
+    and name in ('TC@abc.COM','RRATHORE@abc.COM', 'YCHEN279@abc.COM', 'JGANDHI@abc.COM')
+; -- Check the User is verified or not | Use the **Email field for the notification**
+
+
+
+desc notification integration <Snowflake Notification Service Name>;
+
+```
  
 Step 1:
 -------
@@ -10,7 +28,8 @@ Step 2:
 CREATE OR REPLACE NOTIFICATION INTEGRATION <Snowflake Notification Service Name>
   TYPE = EMAIL
   ENABLED = TRUE
-  ALLOWED_RECIPIENTS = ('<Mail ID which you want to Allow>');
+  ALLOWED_RECIPIENTS = ('<Mail ID which you want to Allow>')
+  ;  -- If we do not give any recipient -> All verified user can receive mail.
  
  
 desc notification integration <Snowflake Notification Service Name>;
@@ -78,6 +97,34 @@ BEGIN
                     ''' || 'Notification' ||''' ,
                     ''' || 'Provider ' || rec.model_provider || fine_tuned_status || ' fine tuned for model ' || rec.model_version || '''
                 ) ';
+
+        /*
+        sql_stmt := 'CALL SYSTEM$SEND_EMAIL(
+                ''' || rec.notification_service_name || ''',
+                ''' || rec.to_mail || ''',
+                ''' || rec.subject || ''',
+                ''' || '<table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+                    <tr>
+                        <th>Usecase</th>
+                        <th>Provider</th>
+                        <th>Fine-Tuned Status</th>
+                        <th>Model Version</th>
+                        <th>Max Threshold</th>
+                        <th>Current Threshold</th>
+                    </tr>
+                    <tr>
+                        <td>' || :usecase || '</td>
+                        <td>' || rec.model_provider || '</td>
+                        <td>' || fine_tuned_status || '</td>
+                        <td>' || rec.model_version || '</td>
+                        <td>' || rec.max_threshold || '</td>
+                        <td style="color: red; font-weight: bold;">' || rec.current_usage || '</td>
+                    </tr>
+                </table>' || ''',
+                ''' || text_format || '''
+            )';
+
+           */
  
         -- a := a || '-' || use_case_log_status || ',';
         IF (use_case_log_status IS NULL) THEN
