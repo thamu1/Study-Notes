@@ -1,0 +1,167 @@
+input:
+  generate:
+    count: 1
+    mapping: | # Get Id : https://intranet.xyz_company_name.net/sites/<Site-Name>/_api/web/lists/getByTitle('<Title Name>')/Id
+      root = {}
+      meta next_url = "https://graph.microsoft.com/v1.0/sites/intranet.xyz_company_name.net:/sites/<Site-Name>:/lists/148ebc30/items?expand=fields"
+
+pipeline:
+  processors:
+
+    - label: set_process_info
+      bloblang: |
+        meta batch_date = now()
+        meta pipeline_id = uuid_v4()
+        meta pipeline_name = "vendor_management"
+        meta pipeline_started_at = now()
+        meta pipeline_ended_at = now()
+        meta status = "in_progress"
+
+    - label: insert_process_log
+      sql_raw:
+        driver: snowflake
+        dsn: "${snowflake_user}@xyz_company_name-enterprise/${snowflake_db}/LOAD?warehouse=${snowflake_wh}&role=${snowflake_role}&authenticator=snowflake_jwt&privateKey=${snowflake_base64_url_encoded_private_key}"
+        query: |
+          INSERT INTO LOAD.SMARTFACTS_PROCESS_LOG VALUES (?, ?, ?, ?, ?, ?)
+        args_mapping: |
+          root = [
+            meta("batch_date"),
+            meta("pipeline_id"),
+            meta("pipeline_name"),
+            meta("pipeline_started_at"),  
+            meta("pipeline_ended_at"),
+            meta("status")
+          ]
+    
+    - try:
+
+      - mapping: |
+          root.values = []
+
+      - while:
+          max_loops: 0
+          check:  meta("next_url").or("") != ""
+          processors:
+
+            - branch:
+                request_map: root = {}
+                processors:
+                  - resource: sharepoint_http_processor
+                result_map: |
+
+                  meta next_url =  this."@odata.nextLink".or("")
+                  root.values = root.values.concat([this])
+                  
+            - log:
+                level: INFO
+                message: "Tracking next URL ---:--- ${! @next_url }"
+
+
+      - mapping: |
+          meta record_count = this.values.length()
+          meta max_batch_size = (@record_count / 100).round()
+          root.values = this.values
+          root._loaded_by = "vendor_management"
+          root._loaded_dt = @pipeline_started_at
+
+    - catch:
+      
+      - log:
+          level: INFO
+          message: "Issue ::::::::::: ${! error() }"
+        
+      - label: update_fail_process_log
+        sql_raw:
+          driver: snowflake
+          dsn: "${snowflake_user}@xyz_company_name-enterprise/${snowflake_db}/LOAD?warehouse=${snowflake_wh}&role=${snowflake_role}&authenticator=snowflake_jwt&privateKey=${snowflake_base64_url_encoded_private_key}"
+          query: |
+            UPDATE LOAD.SMARTFACTS_PROCESS_LOG
+            SET status = ?, 
+                pipeline_ended_at = ?
+            WHERE pipeline_id = ?;
+          args_mapping: |
+            root = [
+              "failed",
+              now(),
+              meta("pipeline_id")
+            ]
+
+      - crash: "Pipeline failed while processing : ${!error()}"
+          
+
+
+processor_resources:
+  - label: sharepoint_http_processor
+    http:
+      url: ${! meta("next_url") }
+      verb: GET
+      headers:
+        Accept: application/json
+      oauth2:
+        enabled: true
+        client_key: ${vm_sharepoint_client_key}
+        client_secret: ${vm_sharepoint_client_secret}
+        token_url: "https://login.microsoftonline.com/<Azure-Cliend-ID>/oauth2/v2.0/token"
+        scopes:
+          - https://graph.microsoft.com/.default
+
+      timeout: 30s
+      retry_period: 1s
+      max_retry_backoff: 30s
+      retries: 3
+
+
+
+output:
+  broker:
+    pattern: fan_out_sequential
+    outputs:
+      - label: trunc_table_raw
+        sql_raw:
+          driver: snowflake
+          dsn: "${snowflake_user}@xyz_company_name-enterprise/${snowflake_db}/LOAD?warehouse=${snowflake_wh}&role=${snowflake_role}&authenticator=snowflake_jwt&privateKey=${snowflake_base64_url_encoded_private_key}"
+          query: TRUNCATE TABLE LOAD.<table-name>;
+          batching:
+            count: 1
+            processors:
+              - mapping: root = if batch_index() == 0 { this } else { deleted() }
+
+
+      - label: put_files_to_stage
+        edw_put:
+          account: xyz_company_name-enterprise # No default (required)
+          user: ${snowflake_user} # No default (required) 
+          private_key_file: /etc/snowflake/secrets/snowflake_private_key
+          private_key_pass: ${snowflake_passphrase}
+          role: ${snowflake_role}
+          database: ${snowflake_db}
+          warehouse: ${snowflake_wh}
+          schema: LOAD
+          stage: "@<Snowflake-Stage-Name>/vendor_management/"
+          snowpipe: <Snow-Pipe-name>
+          batching:
+            period: 100ms
+            count: 100
+
+      - label: update_process_log
+        sql_raw:
+          driver: snowflake
+          dsn: "${snowflake_user}@xyz_company_name-enterprise/${snowflake_db}/LOAD?warehouse=${snowflake_wh}&role=${snowflake_role}&authenticator=snowflake_jwt&privateKey=${snowflake_base64_url_encoded_private_key}"
+          query: |
+            UPDATE LOAD.SMARTFACTS_PROCESS_LOG
+            SET status = ?, 
+                pipeline_ended_at = ?
+            WHERE pipeline_id = ?;
+          args_mapping: |
+            root = [
+              "completed",          # ?: status
+              now(),                # ?: pipeline_ended_at
+              meta("pipeline_id")   # ?: pipeline_id
+            ]
+          batching:
+            count: 1
+            processors:
+              - mapping: root = if batch_index() == @max_batch_size { this } else { deleted() }
+
+
+
