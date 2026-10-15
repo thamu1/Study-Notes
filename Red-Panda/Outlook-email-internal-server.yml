@@ -3,36 +3,78 @@ input:
   generate:
     count: 1
     mapping: |
-      root = [
-        {"NAME": "Thamo", "EMAIL": "abc@xyz-company.com", "STATUS": "PENDING"},
-        {"NAME": "Someone", "EMAIL": "someone@xyz-company.com", "STATUS": "DONE"}
-      ]
+      root = {}
 
 pipeline:
   threads: 1
   processors:
+
+    - label: get_table_details
+      sql_raw:
+          driver: snowflake
+          dsn: "${snowflake_user}@xyz-company-enterprise/${snowflake_db}/LOAD?warehouse=${snowflake_wh}&role=${snowflake_role}&authenticator=snowflake_jwt&privateKey=${snowflake_base64_url_encoded_private_key}"
+          query: |
+            select * from db.load.use_case_mail_test;
+
     # One message per Snowflake row
     - unarchive:
         format: json_array
 
     # Criteria: only rows that should receive a mail
     - mapping: |
-        root = if this.STATUS != "PENDING" { deleted() } else { this }
+        root = if this.CURRENT_USAGE >= this.MAX_THRESHOLD { this } else { deleted() }
 
     # CR/LF stripped to prevent SMTP header injection from table data
     - mapping: |
         root = this
-        meta smtp_server = "mailrelayout.xyz-company.net"
-        meta sender = "he@xyz-company-concessions.com"
-        meta recipient = this.EMAIL.string().re_replace_all("[\\r\\n]", "").trim()
-        meta subject = "Welcome to Azure AI Landing Zone!"
-        meta html_body = "<html><body><p>Hi %s,</p><p>Welcome to Azure AI Landing Zone!</p></body></html>".format(this.NAME.string().escape_html())
+        meta smtp_server = "mailout.xyz-company.net"
+        meta sender = "he@xyz-company.com"
+        # TO_MAIL may hold several addresses separated by , or ;
+        meta recipients = this.TO_MAIL.string().re_replace_all("[\\r\\n<>]", "").re_replace_all(";", ",").split(",").map_each(e -> e.trim()).filter(e -> e != "")
+        # Eg for the above command: [tco@xyz-company.com rish@xyz-company.com]
+        meta subject = "Notification"
+        meta html_body = """
+        <html>
+          <body>
+            <p>This Notification regarding cost useage for <b> %s </b> </p>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;">
+              <tr>
+                  <th>Usecase</th>
+                  <th>Provider</th>
+                  <th>Fine-Tuned Status</th>
+                  <th>Model Version</th>
+                  <th>Max Threshold</th>
+                  <th>Current Threshold</th>
+              </tr>
+              <tr>
+                  <td> %s </td>
+                  <td> %s </td>
+                  <td> %s </td>
+                  <td> %s </td>
+                  <td> %s </td>
+                  <td> <span style="color: red; font-weight: bold;"> %s </span> </td>
+              </tr>
+            </table>
+          </body>
+        </html>""".format(
+                    this.USE_CASE.string().escape_html(),
+                    this.USE_CASE.string().escape_html(),
+                    this.MODEL_PROVIDER.string().escape_html(),
+                    this.FINE_TUNED.string().escape_html(),
+                    this.MODEL_VERSION.string().escape_html(),
+                    this.MAX_THRESHOLD.string().escape_html(),
+                    this.CURRENT_USAGE.string().escape_html(),
+                )
+
+        # *** the above formatted Records are from snowflake table ***
+
+
 
     # Raw RFC 5322 message becomes the content sent to curl
     - mapping: |
         root = [
           "From: <%s>".format(@sender),
-          "To: <%s>".format(@recipient),
+          "To: %s".format(@recipients.map_each(r -> "<%s>".format(r)).join(", ")),
           "Subject: %s".format(@subject),
           "MIME-Version: 1.0",
           "Content-Type: text/html; charset=UTF-8",
@@ -47,15 +89,14 @@ pipeline:
         name: curl.exe
         args_mapping: |
           root = [
-            "--silent", "--show-error", "--connect-timeout", "15", "--max-time", "60",
-            "--url", "smtp://%s:25".format(@smtp_server),
-            "--mail-from", @sender,
-            "--mail-rcpt", @recipient,
-            "--upload-file", "-"
-          ]
+            ["--silent", "--show-error", "--connect-timeout", "15", "--max-time", "60"],
+            ["--url", "smtp://%s:25".format(@smtp_server), "--mail-from", @sender],
+            @recipients.map_each(r -> ["--mail-rcpt", r]).flatten(),
+            ["--upload-file", "-"]
+          ].flatten()
 
     - mapping: |
-        root.recipient = @recipient
+        root.recipients = @recipients
         root.status = if errored() { "failed" } else { "sent" }
         root.error = error()
 
