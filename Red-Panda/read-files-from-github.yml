@@ -1,0 +1,42 @@
+input:
+  generate:
+    count: 1
+    mapping: |
+      root = ""
+
+pipeline:
+  processors:
+
+      # https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}
+      # GITHUB_OWNER: xyz-company-cars (root Name)
+      # GITHUB_REPO: data-workspace-core-data-bi-7027-genai (repo name)
+      # FILE_PATH: docs/dummy (path to the file in the repo)
+
+    - http:
+        url: https://api.github.com/repos/xyz-company-cars/Repo-Name/contents/docs/dummy?ref=main
+        verb: GET
+        headers:
+          Accept: "application/vnd.github+json"
+          Authorization: "Bearer ${DBT_ENV_SECRET_GH_TOKEN}"
+          X-GitHub-Api-Version: "2022-11-28"
+          User-Agent: "Redpanda-Connect" # GitHub requires a User-Agent header
+
+    - mapping: |
+        root = this.filter(file -> file.type == "file").map_each(file -> {
+          "path": file.path,
+          "url": file.download_url,
+          "metadata": @
+        })
+
+    - unarchive:
+        format: json_array
+
+    - http:
+        verb: GET
+        url: ${! json("url") }
+        headers:
+          User-Agent: "Redpanda-Connect"
+
+output:
+  stdout:
+    codec: lines
