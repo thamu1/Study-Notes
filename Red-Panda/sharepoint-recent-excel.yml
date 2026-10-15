@@ -107,7 +107,7 @@ processor_resources:
         enabled: true
         client_key: ${sharepoint_client_key} 
         client_secret: ${sharepoint_client_secret} 
-        token_url: "https://login.microsoftonline.com/<Azure-Application-Client-Id>/oauth2/v2.0/token" # Optional
+        token_url: "https://login.microsoftonline.com/<Azure-Directory (tenant) ID-From-App-Registration>/oauth2/v2.0/token" # Optional
         scopes: [
            "https://graph.microsoft.com/.default" # Optional
         ]
