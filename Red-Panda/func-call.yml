@@ -1,0 +1,30 @@
+input:
+  generate:
+    count: 1
+    mapping: |
+      meta counter = "1"
+
+pipeline:
+  processors:
+    - while:
+        max_loops: 0
+        check: |
+          meta("counter").number().or(0) <= 5
+        processors:
+          - log:
+              level: INFO
+              message: 'Counter Value: ${! meta("counter") }'
+          - branch:
+              request_map: root = {}
+              processors:
+                - resource: increment_counter
+              result_map: |
+                meta counter = (meta("counter").number().or(0) + 1).string()
+
+processor_resources:
+  - label: increment_counter
+    mapping: |
+      root = meta("counter")
+
+output:
+  stdout: {}
