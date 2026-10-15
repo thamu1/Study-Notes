@@ -1,0 +1,69 @@
+input:
+  # TODO: replace with sql_select / sql_raw against Snowflake; these rows mimic the table output.
+  generate:
+    count: 1
+    mapping: |
+      root = [
+        {"NAME": "Thamo", "EMAIL": "abc@xyz-company.com", "STATUS": "PENDING"},
+        {"NAME": "Someone", "EMAIL": "someone@xyz-company.com", "STATUS": "DONE"}
+      ]
+
+pipeline:
+  threads: 1
+  processors:
+    # One message per Snowflake row
+    - unarchive:
+        format: json_array
+
+    # Criteria: only rows that should receive a mail
+    - mapping: |
+        root = if this.STATUS != "PENDING" { deleted() } else { this }
+
+    # CR/LF stripped to prevent SMTP header injection from table data
+    - mapping: |
+        root = this
+        meta smtp_server = "mailrelayout.xyz-company.net"
+        meta sender = "he@xyz-company-concessions.com"
+        meta recipient = this.EMAIL.string().re_replace_all("[\\r\\n]", "").trim()
+        meta subject = "Welcome to Azure AI Landing Zone!"
+        meta html_body = "<html><body><p>Hi %s,</p><p>Welcome to Azure AI Landing Zone!</p></body></html>".format(this.NAME.string().escape_html())
+
+    # Raw RFC 5322 message becomes the content sent to curl
+    - mapping: |
+        root = [
+          "From: <%s>".format(@sender),
+          "To: <%s>".format(@recipient),
+          "Subject: %s".format(@subject),
+          "MIME-Version: 1.0",
+          "Content-Type: text/html; charset=UTF-8",
+          "",
+          @html_body,
+          ""
+        ].join("\r\n")
+
+    - label: send_mail
+      command:
+        # Message content (the raw email) is piped to curl's stdin. On Linux use name: curl.
+        name: curl.exe
+        args_mapping: |
+          root = [
+            "--silent", "--show-error", "--connect-timeout", "15", "--max-time", "60",
+            "--url", "smtp://%s:25".format(@smtp_server),
+            "--mail-from", @sender,
+            "--mail-rcpt", @recipient,
+            "--upload-file", "-"
+          ]
+
+    - mapping: |
+        root.recipient = @recipient
+        root.status = if errored() { "failed" } else { "sent" }
+        root.error = error()
+
+output:
+  stdout: {}
+
+
+
+
+
+
