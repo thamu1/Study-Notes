@@ -1,0 +1,121 @@
+
+input:
+  broker:
+    inputs:    
+      - generate:
+          count: 1
+          mapping: |
+            root.value = []
+            meta processor = "swipelogs"
+            meta formatted_timestamp = now().ts_format("20060102150405", "UTC")
+            meta is_active = "Y"
+            let drive_id = "b!<Drive-Id>" # ITH dashboard Files       
+            meta drive_id = $drive_id
+            meta address = "B2:H1000000"
+            meta next_link = "https://graph.microsoft.com/v1.0/drives/" + $drive_id + "/root:/Dashboard Files/SwipeData:/children?$select=id,name,lastModifiedDateTime,createdDateTime"
+            
+        processors:
+          - log:
+              level: INFO
+              message: 'Processing Initiation for Employee swipelogs data'
+       
+pipeline:
+  processors:
+    - log:
+        level: INFO
+        message: 'Processing Employee swipelogs data URL: ${! meta("next_link") }'
+    - resource: sharepoint_http_processor
+
+     # 2️⃣ Extract only the list of items
+    - bloblang: |
+        root.children = this.value     
+
+    # 3️⃣ Sort by modified date and pick the latest
+
+    - bloblang: |
+        root.value.sorted_children = []
+        if this.children.length() > 0 {
+          root.value.sorted_children = this.children.sort_by(v -> v.lastModifiedDateTime).slice(-1)
+        }
+        meta item_id = root.value.sorted_children.index(0).id 
+        meta file_name = root.value.sorted_children.index(0).name
+        meta process_flag = if root.value.sorted_children.index(0).lastModifiedDateTime > now().ts_add_iso8601("-P500D").format_timestamp("2006-01-02") { "Y" } else { "N" }
+
+     # 4️⃣ Simplify output
+    - bloblang: |
+        meta log_value = {
+          "id": this.value.sorted_children.index(0).id,
+          "name": this.value.sorted_children.index(0).name,
+          "lastModifiedDateTime": this.value.sorted_children.index(0).lastModifiedDateTime,
+          "createdDateTime": this.value.sorted_children.index(0).createdDateTime
+        }
+
+        meta next_link = "https://graph.microsoft.com/v1.0/drives/" + meta("drive_id")+ "/items/" + meta("item_id")  + "/workbook/worksheets?$select=id,name,visibility"
+    - log:
+          level: INFO
+          message: 'Latest file to process: ${! meta("next_link") } \n Details: ${! meta("log_value") }'
+
+    - resource: sharepoint_http_processor
+    - bloblang: |
+            meta first_sheet_id = this.value.index(0).id
+            meta first_sheet_name = this.value.index(0).name
+    - bloblang: |
+            root.value.sorted_children = deleted()
+            meta next_link = "https://graph.microsoft.com/v1.0/drives/" + meta("drive_id")+ "/items/" + meta("item_id")  + "/workbook/worksheets/" + meta("first_sheet_id") + "/range(address='" + meta("address") + "')/usedRange(valuesOnly=true)?$select=values"
+            
+    - log:
+          level: INFO
+          message: 'Extracted sheets: ${! meta("next_link") }'
+  
+    - switch:    
+      - check: meta("process_flag").or("") == "Y"
+        processors:
+          - branch:
+              request_map: | 
+                    root = {}
+                    root.value = []
+              processors:
+                - resource:  sharepoint_http_processor 
+              result_map: |
+                  meta next_link =  this."@odata.nextLink".or("")
+                  root.value = (root.value.or([])).concat(this.values.map_each(item -> {            
+                  "CDSID": item.index(0).or(""),
+                  "employee_name": item.index(1).or(""),
+                  "Punch_date": 
+                    item.index(2).or("").split("/").index(2).or("") + "-" +
+                    item.index(2).or("").split("/").index(1).or("") + "-" +
+                    item.index(2).or("").split("/").index(0).or(""),
+                  "Controller": item.index(3).or(""),
+                  "Time_In": item.index(4).or(""),
+                  "Time_out": item.index(5).or(""),
+                  "Total_Hours": item.index(6).or("")
+                  }))
+          - mapping: |
+              root = this.value
+
+          - unarchive:
+              format: "json_array"
+
+processor_resources:
+  - label: sharepoint_http_processor
+    http:
+      url: ${! meta("next_link") } #  list
+      verb: GET
+      headers: 
+        Accept: "application/json"
+      oauth2:
+        enabled: true
+        client_key: ${sharepoint_client_key} 
+        client_secret: ${sharepoint_client_secret} 
+        token_url: "https://login.microsoftonline.com/<Azure-Application-Client-Id>/oauth2/v2.0/token" # Optional
+        scopes: [
+           "https://graph.microsoft.com/.default" # Optional
+        ]
+        endpoint_params:   
+          grant_type:
+            - client_credentials
+      timeout: 105s
+
+output:
+  stdout: { }
+      
