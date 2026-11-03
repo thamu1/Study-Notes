@@ -93,3 +93,12 @@ flowchart LR
   - **For every** N  bytes written (controlled by `index.interval.bytes`), the broker writes corresponding entries to two memory-mapped auxiliary files:
     - **Offset Index (`.index`):** Maps logical offsets to byte positions in the `.log` file, enabling fast binary lookups.
     - **Time Index (`.timeindex`):** Maps timestamps to offsets for time-based searches and log retention pruning.
+
+
+### Replication
+
+- Kafka relies on followers to pull the data Actively instead of leader pushing the data to followers 
+- Followers runs `FetchReqest` call to request for data
+- Leader send the details using `sendfile` from is OS Page Cache over network as Zero Copy Transfer
+- Followers update their own OS Page Cache Log and update is LEO(Local End Offset).
+- On subsequent request the followers inform of its updated LEO. It act as Ack & to avoid duplicate read. 
