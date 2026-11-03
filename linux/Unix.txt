@@ -175,6 +175,7 @@ Variables:
 	variables used to store the value.
 	a = "value"
 	echo $a  -> call like php command.
+
 Array:
 	That holds multiple value in a single variables.
 	1. arr_name[n] = value. -> NAME[0]="Zara"
@@ -268,7 +269,6 @@ System command:
 6.	shutdown - shutdown the system. 
 
 
-		
 		
 Unix Advance:
 	- alias "cmd"  

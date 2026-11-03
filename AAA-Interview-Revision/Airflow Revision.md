@@ -17,9 +17,9 @@
 ## Airflow 3 Architecture
 
 * Simple flow:
-	* DAG bundle -> DAG processor -> metadata database -> scheduler -> executor -> worker/task
-	* User/UI/API -> API server -> metadata database and task execution API
-	* Waiting task -> triggerer -> scheduler -> worker when the event occurs
+  * DAG bundle -> DAG processor -> metadata database -> scheduler -> executor -> worker/task
+  * User/UI/API -> API server -> metadata database and task execution API
+  * Waiting task -> triggerer -> scheduler -> worker when the event occurs
 
 ```mermaid
 flowchart LR
@@ -52,19 +52,19 @@ flowchart LR
 ```
 
 * Required components in Airflow 3:
-	* API server: provides the web UI and REST API; tasks use the task execution API to communicate with Airflow
-	* Scheduler: decides which DAG runs and task instances are ready, then submits work to the executor
-	* DAG processor: parses DAG files from DAG bundles and serializes DAG definitions into the metadata database
-	* DAG bundle: source location for DAG files; local files, Git, and other bundle backends can be used
-	* Metadata database: stores DAGs, task states, runs, connections, variables, XCom metadata, and scheduling information
-	* Executor: configured in the scheduler; decides whether tasks run locally, on workers, in containers, or in another system
-	* API server command: start the Airflow 3 web/API boundary with `airflow api-server`
-	* DAG processor command: start the required standalone parser with `airflow dag-processor`, including local development setups
+  * API server: provides the web UI and REST API; tasks use the task execution API to communicate with Airflow
+  * Scheduler: decides which DAG runs and task instances are ready, then submits work to the executor
+  * DAG processor: parses DAG files from DAG bundles and serializes DAG definitions into the metadata database
+  * DAG bundle: source location for DAG files; local files, Git, and other bundle backends can be used
+  * Metadata database: stores DAGs, task states, runs, connections, variables, XCom metadata, and scheduling information
+  * Executor: configured in the scheduler; decides whether tasks run locally, on workers, in containers, or in another system
+  * API server command: start the Airflow 3 web/API boundary with `airflow api-server`
+  * DAG processor command: start the required standalone parser with `airflow dag-processor`, including local development setups
 * Optional components:
-	* Workers: execute tasks when using a remote executor such as Celery or Kubernetes
-	* Triggerer: runs asynchronous triggers for deferrable operators and frees worker slots while tasks wait
-	* Plugins: extend Airflow with custom UI, operators, hooks, listeners, timetables, or triggers
-	* Message broker: commonly needed by queued executors such as CeleryExecutor
+  * Workers: execute tasks when using a remote executor such as Celery or Kubernetes
+  * Triggerer: runs asynchronous triggers for deferrable operators and frees worker slots while tasks wait
+  * Plugins: extend Airflow with custom UI, operators, hooks, listeners, timetables, or triggers
+  * Message broker: commonly needed by queued executors such as CeleryExecutor
 * Airflow 3 architecture change: the DAG processor is a required standalone component; the scheduler should not directly execute DAG-author code
 * Airflow 3 task execution: a worker starts a new subprocess for each task instance and the task process does not directly access the metadata database
 * Airflow 3 execution boundary: the worker wrapper communicates with the API server through the Task SDK/Execution API; task code should not import metadata ORM sessions
@@ -74,23 +74,23 @@ flowchart LR
 * DAG processor tuning: parsing throughput is influenced by `parsing_processes`, `min_file_process_interval`, import timeouts, and the number and size of DAG files
 * DAG version pinning: a versioned bundle can let a DAG run and its workers use the same code version; local, S3, and GCS bundles may not provide the same version guarantees
 * Distributed deployment:
-	* DAG processor and workers need the DAG bundle
-	* Scheduler and triggerer mainly use the metadata database and do not need direct DAG bundle access
-	* Versioned DAG bundles can help the scheduler and workers use the same DAG version
+  * DAG processor and workers need the DAG bundle
+  * Scheduler and triggerer mainly use the metadata database and do not need direct DAG bundle access
+  * Versioned DAG bundles can help the scheduler and workers use the same DAG version
 * Basic deployment: API server, scheduler, DAG processor, and local executor on one machine
 * Production deployment: external metadata database, remote executor, remote logs, secrets backend, health checks, and multiple Airflow components
 
 ## Architecture Example
 
 * Suppose a daily pipeline loads sales data:
-	* DAG author commits `sales_dag.py` to Git
-	* DAG bundle makes the file available to the DAG processor
-	* DAG processor parses the Python and stores the serialized DAG in the metadata database
-	* Scheduler creates a DAG run and checks task dependencies
-	* Executor sends ready tasks to a worker or container
-	* Worker wrapper starts and supervises one task subprocess for the task instance
-	* Task subprocess uses the Task SDK/Execution API through the worker boundary for state, XCom, context, and Airflow resource access
-	* API server shows the DAG graph, task states, logs, and retries in the UI
+  * DAG author commits `sales_dag.py` to Git
+  * DAG bundle makes the file available to the DAG processor
+  * DAG processor parses the Python and stores the serialized DAG in the metadata database
+  * Scheduler creates a DAG run and checks task dependencies
+  * Executor sends ready tasks to a worker or container
+  * Worker wrapper starts and supervises one task subprocess for the task instance
+  * Task subprocess uses the Task SDK/Execution API through the worker boundary for state, XCom, context, and Airflow resource access
+  * API server shows the DAG graph, task states, logs, and retries in the UI
 
 ### Airflow 3 Task Execution Architecture
 
@@ -144,11 +144,11 @@ sequenceDiagram
 ## Airflow 3 Public Interface
 
 * Recommended imports for DAG authors:
-	* `from airflow.sdk import DAG, task, dag, Asset, Param, TaskGroup`
-	* `from airflow.sdk import get_current_context, Connection, Variable`
+  * `from airflow.sdk import DAG, task, dag, Asset, Param, TaskGroup`
+  * `from airflow.sdk import get_current_context, Connection, Variable`
 * Providers remain the normal source for integrations:
-	* `from airflow.providers.standard.operators.bash import BashOperator`
-	* `from airflow.providers.standard.operators.empty import EmptyOperator`
+  * `from airflow.providers.standard.operators.bash import BashOperator`
+  * `from airflow.providers.standard.operators.empty import EmptyOperator`
 * Do not build new code around internal paths such as `airflow.models.*` or direct metadata ORM models
 * Do not query the metadata database directly from task code in Airflow 3
 * Use the Task Context, stable REST API, or the Python API client for supported access
@@ -160,35 +160,35 @@ sequenceDiagram
 * A DAG usually defines `dag_id`, `start_date`, `schedule`, `catchup`, tags, default arguments, and tasks
 * Airflow 3 example using the recommended SDK:
 
-	```python
-	import pendulum
+  ```python
+  import pendulum
 
-	from airflow.sdk import DAG, task
-	from airflow.providers.standard.operators.bash import BashOperator
+  from airflow.sdk import DAG, task
+  from airflow.providers.standard.operators.bash import BashOperator
 
-	with DAG(
-		dag_id="daily_sales",
-		start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-		schedule="@daily",
-		catchup=False,
-		tags=["sales", "example"],
-	):
-		extract = BashOperator(
-			task_id="extract",
-			bash_command="echo extracting sales",
-		)
+  with DAG(
+  	dag_id="daily_sales",
+  	start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
+  	schedule="@daily",
+  	catchup=False,
+  	tags=["sales", "example"],
+  ):
+  	extract = BashOperator(
+  		task_id="extract",
+  		bash_command="echo extracting sales",
+  	)
 
-		@task
-		def transform():
-			print("transforming sales")
+  	@task
+  	def transform():
+  		print("transforming sales")
 
-		load = BashOperator(
-			task_id="load",
-			bash_command="echo loading sales",
-		)
+  	load = BashOperator(
+  		task_id="load",
+  		bash_command="echo loading sales",
+  	)
 
-		extract >> transform() >> load
-	```
+  	extract >> transform() >> load
+  ```
 * DAGs can also be created with the `DAG(...)` constructor or the `@dag` decorator
 * A function decorated with `@dag` must be called and assigned at module level so Airflow can discover the DAG
 * Every task must belong to a DAG, either through a context manager, decorator, dependency, or explicit `dag=`
@@ -211,25 +211,26 @@ sequenceDiagram
 
 * Operators are reusable classes that perform a type of work
 * Common operators:
-	* `BashOperator`: runs a shell command
-	* `PythonOperator`: runs a Python callable
-	* Provider operators: submit work to BigQuery, Kubernetes, Databricks, databases, cloud storage, and APIs
-	* `EmptyOperator`: useful for grouping or joining dependencies without work
+
+  * `BashOperator`: runs a shell command
+  * `PythonOperator`: runs a Python callable
+  * Provider operators: submit work to BigQuery, Kubernetes, Databricks, databases, cloud storage, and APIs
+  * `EmptyOperator`: useful for grouping or joining dependencies without work
 * TaskFlow uses Python functions as tasks:
 
-	```python
-	from airflow.sdk import task
+  ```python
+  from airflow.sdk import task
 
-	@task
-	def extract() -> list[int]:
-		return [10, 20, 30]
+  @task
+  def extract() -> list[int]:
+  	return [10, 20, 30]
 
-	@task
-	def total(values: list[int]) -> int:
-		return sum(values)
+  @task
+  def total(values: list[int]) -> int:
+  	return sum(values)
 
-	total(extract())
-	```
+  total(extract())
+  ```
 * Calling a TaskFlow function while defining the DAG creates a task; the function body runs later on a worker
 * A returned value is stored as an XCom and becomes an `XComArg` for downstream dependencies
 * Use `multiple_outputs=True` or return a dictionary when several small values must be passed
@@ -241,7 +242,7 @@ sequenceDiagram
 * `upstream >> downstream` means downstream waits for upstream
 * `downstream << upstream` expresses the same relationship in reverse
 * Lists allow fan-out and fan-in:
-	* `extract >> [clean, validate] >> load`
+  * `extract >> [clean, validate] >> load`
 * `chain(a, b, c)` creates a readable linear chain
 * `cross_downstream([a, b], [c, d])` creates every upstream-to-downstream combination
 * A DAG must be acyclic; a dependency path cannot eventually point back to an earlier task
@@ -253,8 +254,8 @@ sequenceDiagram
 * First ask whether both workflows should be one DAG; one DAG is usually easier to view, schedule, retry, and debug
 * Keep separate DAGs when they have different schedules, different owners, independent deployment, or a reusable upstream workflow
 * Two common Airflow patterns:
-	* Triggering: `TriggerDagRunOperator` starts the downstream DAG
-	* Waiting: `ExternalTaskSensor` waits for a DAG or task in another DAG to finish
+  * Triggering: `TriggerDagRunOperator` starts the downstream DAG
+  * Waiting: `ExternalTaskSensor` waits for a DAG or task in another DAG to finish
 * Use an asset instead when the real dependency is “run after this dataset is updated,” not “run after this particular DAG run”
 
 ### Simple Example: Trigger One DAG from Another
@@ -262,65 +263,66 @@ sequenceDiagram
 * Scenario: `sales_extract` finishes loading raw data, then starts `sales_transform`
 * The upstream DAG sends a small configuration dictionary through `conf`:
 
-	```py
-	import pendulum
+  ```py
+  import pendulum
 
-	from airflow.sdk import DAG
-	from airflow.providers.standard.operators.empty import EmptyOperator
-	from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
+  from airflow.sdk import DAG
+  from airflow.providers.standard.operators.empty import EmptyOperator
+  from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
 
-	with DAG(
-		dag_id="sales_extract",
-		start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-		schedule="@daily",
-		catchup=False,
-	):
-		extract = EmptyOperator(task_id="extract_sales")
+  with DAG(
+  	dag_id="sales_extract",
+  	start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
+  	schedule="@daily",
+  	catchup=False,
+  ):
+  	extract = EmptyOperator(task_id="extract_sales")
 
-		trigger_transform = TriggerDagRunOperator(
-			task_id="trigger_sales_transform",
-			trigger_dag_id="sales_transform",
-			conf={
-				"source": "mysql",
-				"partition": "{{ data_interval_start | ds }}",
-			},
-			wait_for_completion=True,
-			deferrable=True,
-		)
+  	trigger_transform = TriggerDagRunOperator(
+  		task_id="trigger_sales_transform",
+  		trigger_dag_id="sales_transform",
+  		conf={
+  			"source": "mysql",
+  			"partition": "{{ data_interval_start | ds }}",
+  		},
+  		wait_for_completion=True,
+  		deferrable=True,
+  	)
 
-		extract >> trigger_transform
-	```
+  	extract >> trigger_transform
+  ```
 * The downstream DAG can read the configuration from `dag_run.conf` at task runtime:
 
-	```py
-	import pendulum
+  ```py
+  import pendulum
 
-	from airflow.sdk import DAG, get_current_context, task
+  from airflow.sdk import DAG, get_current_context, task
 
-	with DAG(
-		dag_id="sales_transform",
-		start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-		schedule=None,
-		catchup=False,
-	):
-		@task
-		def transform_sales() -> None:
-			context = get_current_context()
-			dag_run = context["dag_run"]
-			run_conf = dag_run.conf or {}
+  with DAG(
+  	dag_id="sales_transform",
+  	start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
+  	schedule=None,
+  	catchup=False,
+  ):
+  	@task
+  	def transform_sales() -> None:
+  		context = get_current_context()
+  		dag_run = context["dag_run"]
+  		run_conf = dag_run.conf or {}
 
-			source = run_conf.get("source", "unknown")
-			partition = run_conf.get("partition")
-			print(f"Transforming {source} partition {partition}")
+  		source = run_conf.get("source", "unknown")
+  		partition = run_conf.get("partition")
+  		print(f"Transforming {source} partition {partition}")
 
-		transform_sales()
-	```
+  	transform_sales()
+  ```
 * What happens:
-	* `sales_extract` runs `extract_sales`
-	* `TriggerDagRunOperator` creates a run of the DAG whose ID is `sales_transform`
-	* `conf` passes JSON-like values to the new DAG
-	* `wait_for_completion=True` keeps the trigger task waiting until the target DAG finishes
-	* `deferrable=True` allows the trigger task to wait using the triggerer instead of occupying a worker slot
+
+  * `sales_extract` runs `extract_sales`
+  * `TriggerDagRunOperator` creates a run of the DAG whose ID is `sales_transform`
+  * `conf` passes JSON-like values to the new DAG
+  * `wait_for_completion=True` keeps the trigger task waiting until the target DAG finishes
+  * `deferrable=True` allows the trigger task to wait using the triggerer instead of occupying a worker slot
 * If the controller should only start the target and continue immediately, omit `wait_for_completion`
 * `trigger_dag_id` must exactly match the target DAG's `dag_id`
 * Do not pass large datasets through `conf`; pass a table name, partition, object-storage URI, or job ID
@@ -329,35 +331,36 @@ sequenceDiagram
 
 * Scenario: `daily_report` should run only after the `sales_extract` DAG's `load_sales` task succeeds
 
-	```py
-	import pendulum
+  ```py
+  import pendulum
 
-	from airflow.sdk import DAG
-	from airflow.providers.standard.operators.empty import EmptyOperator
-	from airflow.providers.standard.sensors.external_task import ExternalTaskSensor
+  from airflow.sdk import DAG
+  from airflow.providers.standard.operators.empty import EmptyOperator
+  from airflow.providers.standard.sensors.external_task import ExternalTaskSensor
 
-	with DAG(
-		dag_id="daily_report",
-		start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-		schedule="@daily",
-		catchup=False,
-	):
-		wait_for_extract = ExternalTaskSensor(
-			task_id="wait_for_sales_extract",
-			external_dag_id="sales_extract",
-			external_task_id="load_sales",
-			allowed_states=["success"],
-			failed_states=["failed", "skipped"],
-			timeout=60 * 60,
-			mode="reschedule",
-		)
+  with DAG(
+  	dag_id="daily_report",
+  	start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
+  	schedule="@daily",
+  	catchup=False,
+  ):
+  	wait_for_extract = ExternalTaskSensor(
+  		task_id="wait_for_sales_extract",
+  		external_dag_id="sales_extract",
+  		external_task_id="load_sales",
+  		allowed_states=["success"],
+  		failed_states=["failed", "skipped"],
+  		timeout=60 * 60,
+  		mode="reschedule",
+  	)
 
-		build_report = EmptyOperator(task_id="build_report")
+  	build_report = EmptyOperator(task_id="build_report")
 
-		wait_for_extract >> build_report
-	```
+  	wait_for_extract >> build_report
+  ```
 * To wait for the whole external DAG instead of one task, omit `external_task_id`:
-	* `ExternalTaskSensor(task_id="wait_for_extract", external_dag_id="sales_extract", ...)`
+
+  * `ExternalTaskSensor(task_id="wait_for_extract", external_dag_id="sales_extract", ...)`
 * `allowed_states` says which external states release the sensor
 * `failed_states` says which external states make the sensor fail
 * `mode="reschedule"` releases the worker slot between checks
@@ -447,23 +450,24 @@ sequenceDiagram
 
 * Default trigger rule: `all_success`; all direct upstream tasks must succeed
 * Common trigger rules:
-	* `all_success`: every upstream succeeds
-	* `all_done`: every upstream reaches a terminal state
-	* `one_success`: at least one upstream succeeds
-	* `one_failed`: at least one upstream fails
-	* `none_failed`: upstream tasks succeed or are skipped
-	* `none_failed_min_one_success`: no failure and at least one success; useful after branching
-	* `always`: no upstream state requirement
+
+  * `all_success`: every upstream succeeds
+  * `all_done`: every upstream reaches a terminal state
+  * `one_success`: at least one upstream succeeds
+  * `one_failed`: at least one upstream fails
+  * `none_failed`: upstream tasks succeed or are skipped
+  * `none_failed_min_one_success`: no failure and at least one success; useful after branching
+  * `always`: no upstream state requirement
 * Branching chooses which downstream task IDs continue; non-selected branches are skipped
 * Airflow 3 TaskFlow branching:
 
-	```python
-	from airflow.sdk import task
+  ```python
+  from airflow.sdk import task
 
-	@task.branch
-	def choose_path(is_valid: bool) -> str:
-		return "load" if is_valid else "notify"
-	```
+  @task.branch
+  def choose_path(is_valid: bool) -> str:
+  	return "load" if is_valid else "notify"
+  ```
 * A join after branching often needs `none_failed_min_one_success`, not `all_success`, because skipped branches otherwise cascade
 * Setup and teardown tasks model resource creation and cleanup; teardown tasks can run even when work fails
 
@@ -472,19 +476,19 @@ sequenceDiagram
 * Dynamic task mapping creates task instances at runtime from a list or dictionary
 * Use `.expand()` when the number of items is known only during a DAG run:
 
-	```python
-	from airflow.sdk import task
+  ```python
+  from airflow.sdk import task
 
-	@task
-	def get_files() -> list[str]:
-		return ["a.csv", "b.csv", "c.csv"]
+  @task
+  def get_files() -> list[str]:
+  	return ["a.csv", "b.csv", "c.csv"]
 
-	@task
-	def process_file(path: str) -> str:
-		return f"processed {path}"
+  @task
+  def process_file(path: str) -> str:
+  	return f"processed {path}"
 
-	process_file.expand(path=get_files())
-	```
+  process_file.expand(path=get_files())
+  ```
 * `.partial()` sets arguments shared by every mapped task; `.expand()` supplies mapped arguments
 * Mapped task instances have a `map_index`; inspect individual map indexes when debugging
 * Use mapping for data-driven work, not for generating an unstable DAG topology during parsing
@@ -494,9 +498,9 @@ sequenceDiagram
 
 * A sensor waits until a condition is true, such as a file, API response, partition, or external DAG run
 * Sensor modes:
-	* `poke`: keeps a worker slot while waiting
-	* `reschedule`: releases the worker between checks and runs again later
-	* Deferrable: moves waiting logic to the triggerer and releases the worker slot
+  * `poke`: keeps a worker slot while waiting
+  * `reschedule`: releases the worker between checks and runs again later
+  * Deferrable: moves waiting logic to the triggerer and releases the worker slot
 * Deferrable operators need at least one running triggerer
 * A trigger is small asynchronous Python code that waits for an event and yields a `TriggerEvent`
 * When the event arrives, the scheduler sends the task back to a worker to resume
@@ -537,70 +541,69 @@ sequenceDiagram
 * `Variable`: Airflow-wide configuration value; create `environment_name` in the Airflow UI or CLI before running this example
 * `Param`: value supplied when triggering the DAG; the default below is used when no value is supplied
 
-	```py
-	import pendulum
+  ```py
+  import pendulum
 
-	from airflow.sdk import DAG, Param, Variable, get_current_context, task
+  from airflow.sdk import DAG, Param, Variable, get_current_context, task
 
-	with DAG(
-		dag_id="read_airflow_values",
-		start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
-		schedule=None,
-		catchup=False,
-		params={
-			"customer_id": Param(101, type="integer"),
-			"run_mode": Param("full", type="string", enum=["full", "incremental"]),
-		},
-	):
-		@task
-		def create_xcom_value() -> dict:
-			return {"source": "mysql", "row_count": 250}
+  with DAG(
+  	dag_id="read_airflow_values",
+  	start_date=pendulum.datetime(2025, 1, 1, tz="UTC"),
+  	schedule=None,
+  	catchup=False,
+  	params={
+  		"customer_id": Param(101, type="integer"),
+  		"run_mode": Param("full", type="string", enum=["full", "incremental"]),
+  	},
+  ):
+  	@task
+  	def create_xcom_value() -> dict:
+  		return {"source": "mysql", "row_count": 250}
 
-		@task
-		def read_values() -> None:
-			context = get_current_context()
-			task_instance = context["ti"]
+  	@task
+  	def read_values() -> None:
+  		context = get_current_context()
+  		task_instance = context["ti"]
 
-			# 1. Read an XCom returned by the upstream task.
-			xcom_value = task_instance.xcom_pull(
-				task_ids="create_xcom_value",
-				key="return_value",
-			)
-			source_name = xcom_value["source"]
-			row_count = xcom_value["row_count"]
+  		# 1. Read an XCom returned by the upstream task.
+  		xcom_value = task_instance.xcom_pull(
+  			task_ids="create_xcom_value",
+  			key="return_value",
+  		)
+  		source_name = xcom_value["source"]
+  		row_count = xcom_value["row_count"]
 
-			# 2. Read a DAG Param supplied when the DAG is triggered.
-			params = context["params"]
-			customer_id = params["customer_id"]
-			run_mode = params["run_mode"]
+  		# 2. Read a DAG Param supplied when the DAG is triggered.
+  		params = context["params"]
+  		customer_id = params["customer_id"]
+  		run_mode = params["run_mode"]
 
-			# 3. Read an Airflow Variable at task runtime.
-			environment_name = Variable.get("environment_name", default="dev")
+  		# 3. Read an Airflow Variable at task runtime.
+  		environment_name = Variable.get("environment_name", default="dev")
 
-			print(f"Source: {source_name}")
-			print(f"Rows: {row_count}")
-			print(f"Customer: {customer_id}")
-			print(f"Mode: {run_mode}")
-			print(f"Environment: {environment_name}")
+  		print(f"Source: {source_name}")
+  		print(f"Rows: {row_count}")
+  		print(f"Customer: {customer_id}")
+  		print(f"Mode: {run_mode}")
+  		print(f"Environment: {environment_name}")
 
-		create_xcom_value() >> read_values()
-	```
+  	create_xcom_value() >> read_values()
+  ```
 
-	```py
-	from airflow.sdk import Connection, get_current_context, task
+  ```py
+  from airflow.sdk import Connection, get_current_context, task
 
-	@task
-	def read_connection() -> None:
-		context = get_current_context()
-		connection_id = "my_mysql"
-		connection = Connection.get(connection_id)
+  @task
+  def read_connection() -> None:
+  	context = get_current_context()
+  	connection_id = "my_mysql"
+  	connection = Connection.get(connection_id)
 
-		host = connection.host
-		port = connection.port
-		database = connection.schema
-		print(f"Connecting to {host}:{port}/{database}")
-	```
-
+  	host = connection.host
+  	port = connection.port
+  	database = connection.schema
+  	print(f"Connecting to {host}:{port}/{database}")
+  ```
 * Do not print `connection.login`, `connection.password`, or secret values in task logs
 * Do not write `Variable.get(...)`, `Connection.get(...)`, or database/API calls at the top level of the DAG file because the DAG processor executes that code during every parse
 * For a templated operator field, an alternative is `{{ var.value.environment_name }}` or `{{ params.run_mode }}`, but use `get_current_context()` when the value is needed as a Python variable inside a task
@@ -610,7 +613,7 @@ sequenceDiagram
 * Operators can mark fields as templated and use Jinja expressions such as `{{ ds }}` and `{{ data_interval_start }}`
 * Common context values: `dag_run`, `logical_date`, `data_interval_start`, `data_interval_end`, `task_instance`, `run_id`, `params`, `var`, and `conn`
 * Template example:
-	* `bash_command="echo processing {{ data_interval_start }} to {{ data_interval_end }}"`
+  * `bash_command="echo processing {{ data_interval_start }} to {{ data_interval_end }}"`
 * Do not use Jinja to build unsafe SQL or shell commands from untrusted input; validate and parameterize values
 * In a TaskFlow function, use typed context arguments or `get_current_context()` when runtime context is needed
 
