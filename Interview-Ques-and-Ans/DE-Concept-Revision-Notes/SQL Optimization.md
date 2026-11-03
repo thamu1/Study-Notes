@@ -7,10 +7,7 @@
 - Avoid Wide Transformation where ever possible
 - Use limit to see samples
 
-### [[Bigquery Optimization]]
 
-### [[Spark Optimization]]
-
-
-
+[Bigquery Optimization](./Bigquery%20Optimization.md)
+[Spark Optimization](./Spark%20Optimization.md)
 

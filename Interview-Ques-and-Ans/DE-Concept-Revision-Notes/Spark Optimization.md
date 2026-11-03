@@ -1,6 +1,6 @@
 # Spark:
 
-Back To : [[SQL Optimization]]
+Back To : [SQL Optimization](./SQL%20Optimization.md)
 
 ## Config + Concept Optimization
 

@@ -1,6 +1,6 @@
 # Bigquery Optimization
 
-Back To : [[SQL Optimization]]
+Back To : [SQL Optimization](./SQL%20Optimization.md)
 
 ## Partition by
 
