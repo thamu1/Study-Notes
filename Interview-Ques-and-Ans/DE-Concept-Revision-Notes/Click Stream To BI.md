@@ -1,4 +1,4 @@
-# Click Stiream To BI
+# Click Stream To BI
 
 back to all DE System Design : [[DE System Design]]
 
