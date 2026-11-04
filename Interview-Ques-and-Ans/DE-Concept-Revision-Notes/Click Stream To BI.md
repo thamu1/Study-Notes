@@ -113,7 +113,7 @@ flowchart LR
 ### Ack back to Producer
 
 - broker returns response to Producer based on configured `ack` level
-- 0: No response at all, 1: As soon as written it in [OS Page cache](#Writing%20to%20the%20Append-Only Commit%20Log), -1/all: req placed in `Purgatory`. once all replication done ack back to Producer.
+- 0: No response at all, 1: As soon as written it in [OS Page cache](#Writing%20to%20the%20Append-Only%20Commit%20Log), -1/all: req placed in `Purgatory`. once all replication done ack back to Producer.
 
 ### Asynchronous Flushing to Physical Disk (Dirty Pages)
 
