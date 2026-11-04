@@ -95,10 +95,27 @@ flowchart LR
     - **Time Index (`.timeindex`):** Maps timestamps to offsets for time-based searches and log retention pruning.
 
 
-### Replication
+### Replication and followers Replica
 
 - Kafka relies on followers to pull the data Actively instead of leader pushing the data to followers 
 - Followers runs `FetchReqest` call to request for data
 - Leader send the details using `sendfile` from is OS Page Cache over network as Zero Copy Transfer
 - Followers update their own OS Page Cache Log and update is LEO(Local End Offset).
 - On subsequent request the followers inform of its updated LEO. It act as Ack & to avoid duplicate read. 
+
+### Advancing the High Watermark
+
+- The Leader tracks the LEO of every replica in the ISR (In-Sync Replica) pool.
+- HW (Higher Watermark) is the highest offset that has been replicated by all the Replica in the ISR. 
+- once all replica received x, Leader advance to x + 1
+- Consumer can consume till X. to avoid potentially lossy data from leaking downstream.
+
+### Ack back to Producer
+
+- broker returns response to Producer based on configured `ack` level
+- 0: No response at all, 1: As soon as written it in [OS Page cache](#Writing to the Append-Only Commit Log), -1/all: req placed in `Purgatory`. once all replication done ack back to Producer.
+
+### Asynchronous Flushing to Physical Disk (Dirty Pages)
+
+- The Linux kernel's background flushing threads (pdflush, flush, or kswapd) periodically flush dirty memory pages from the page cache to physical storage (NVMe/SSD/HDD) according to system kernel parameters (dirty_background_ratio, dirty_expire_centisecs).
+- Kafka intentionally delegates durability to replication across independent hardware nodes rather than blocking synchronous disk flushes (fsync) on every message.
