@@ -1,4 +1,4 @@
-# DE Concepts:
+# DE Concepts
 
 ## Partitioning vs Clustering
 
@@ -15,13 +15,16 @@
 - Physically arrange the data in a order
 - Best for filtering, join, ordering, grouping.
 - High cardinality column with many distinct values in a column
-
+<a id="partition-clster-query"> </a>
 ```sql
--- Bigquery
-create or replace table <table-name>
-(col datatype, )
-partition by <time-series-column or int range column>
-cluster by <any type limited to 4 column>
+    -- Bigquery
+    create or replace table <table-name>
+    (col datatype, )
+    partition by <time-series-column or int range column>
+    cluster by <any type limited to 4 column>
+    options(
+        require_partion_filtre = true -- alter table <> set options (require_partition_filter = true)
+    )
 ```
 
 - refer more on the following : [[Bigquery Optimization]]
@@ -46,14 +49,9 @@ cluster by <any type limited to 4 column>
 ## Star vs Snowflake Schema
 
 ### Fact Table
-
 - Foreign Keys + Measures/Metrics (e.g., `Product_ID`, `Store_ID`, `Date_ID` + `Quantity_Sold`, `Revenue`)
 - Loaded after the Dim tables
 
-| Star Schema                                | Snowflake Schema                     |
-| ------------------------------------------ | ------------------------------------ |
-| DeNormalized with Fact and Dimension Table | Normalized with Fact + Dim + Sub Dim |
-| Faster because require few join            | Slower because require more join     |
 
 ### Dim Table
 
@@ -62,3 +60,13 @@ cluster by <any type limited to 4 column>
 ### Factless fact Table
 
 - With no numerical Measure but with all the foreign key information
+
+## Partition Pruning
+- Apply query filter on the Partition column. [Eg](#partition-clster-query)
+
+
+## Bloom Filter
+
+- Space efficient, probabilistic data structure used to test whether an element belongs to a set.
+- Instead of storing actual data(like words, URLs, database keys etc), It uses a compact bit array and hash functions to save massive amount of memory.
+
