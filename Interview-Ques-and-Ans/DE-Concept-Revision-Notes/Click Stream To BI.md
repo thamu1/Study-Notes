@@ -94,28 +94,106 @@ flowchart LR
     - **Offset Index (`.index`):** Maps logical offsets to byte positions in the `.log` file, enabling fast binary lookups.
     - **Time Index (`.timeindex`):** Maps timestamps to offsets for time-based searches and log retention pruning.
 
-
 ### Replication and followers Replica
 
-- Kafka relies on followers to pull the data Actively instead of leader pushing the data to followers 
+- Kafka relies on followers to pull the data Actively instead of leader pushing the data to followers
 - Followers runs `FetchReqest` call to request for data
 - Leader send the details using `sendfile` from is OS Page Cache over network as Zero Copy Transfer
 - Followers update their own OS Page Cache Log and update is LEO(Local End Offset).
-- On subsequent request the followers inform of its updated LEO. It act as Ack & to avoid duplicate read. 
+- On subsequent request the followers inform of its updated LEO. It act as Ack & to avoid duplicate read.
 
 ### Advancing the High Watermark
 
 - The Leader tracks the LEO of every replica in the ISR (In-Sync Replica) pool.
-- HW (Higher Watermark) is the highest offset that has been replicated by all the Replica in the ISR. 
+- HW (Higher Watermark) is the highest offset that has been replicated by all the Replica in the ISR.
 - once all replica received x, Leader advance to x + 1
 - Consumer can consume till X. to avoid potentially lossy data from leaking downstream.
 
 ### Ack back to Producer
 
 - broker returns response to Producer based on configured `ack` level
-- 0: No response at all, 1: As soon as written it in [OS Page cache](#Writing%20to%20the%20Append-Only%20Commit%20Log), -1/all: req placed in `Purgatory`. once all replication done ack back to Producer.
+  - 0: No response at all, 1: As soon as written it in [OS Page cache](#writing-to-the-append-only-commit-log),
+  - 1/all: req placed in `Purgatory`. once all replication done ack back to Producer.
 
 ### Asynchronous Flushing to Physical Disk (Dirty Pages)
 
 - The Linux kernel's background flushing threads (pdflush, flush, or kswapd) periodically flush dirty memory pages from the page cache to physical storage (NVMe/SSD/HDD) according to system kernel parameters (dirty_background_ratio, dirty_expire_centisecs).
 - Kafka intentionally delegates durability to replication across independent hardware nodes rather than blocking synchronous disk flushes (fsync) on every message.
+
+# Process Events Using Spark Structure Streaming
+
+## Raw Data Handling:
+
+- Duplicate Events
+- Invalid or Missing Fields
+- Late Arraiving Events
+- [Schema Evolution and Schema Drift](#schema-evolution-and-schema-drift)
+- Inconsistent Timestamps
+
+## Flow
+
+* Read - Read data from Kafka as Consumer
+* Exception Handling
+* Parsing - Json into Structured DF
+* Validation - Reject invalid Record - missing event_id etc..
+* Deduplication - Remove repeated events - same event id
+* Enrichment - Add business information - Product category
+* Aggregation - Calculate Metrics
+* Routing - Seperate bad records - Send to Quarantine/DLQ
+* Write
+* Idempotent - CDC : SCD - [Type2](../../DBT/scd_type2_test.sql)
+
+
+## Spark Terms
+
+### Schema Evolution and Schema Drift
+
+- Source data's schema may change
+- To handle this we need to receive raw data
+- Validate the shema against destination
+- Manipulate based on the requirement.
+
+#### Options:
+  - Vanilla Spark : spark.read.option("mergeSchema", "true").parquet("/path/)
+    - Read footers of all the Parquet Files, Get all the distinct columns -> unifies to global DataFrame schema.
+    - Drawback : Additional Compute Overhead.
+
+  - Lakehouse (Delta Lake, Iceberg)
+
+### Watermark
+  - how late data is acceptable.
+  - Eg: 
+  - ```text 
+    set watermark duration as 5 min
+    Spark processing 10 am data. 
+    so spark after 9.55 am data is acceptable but not Before that. 
+    when spark processing 10.05 am data spark accept after 10am data. 
+    ```
+
+### Trigger
+  - When to trigger the data.
+    - availableNow
+    - Once
+    - continuous
+    - processingTime()
+
+### Write
+  1. Store data in Blob Storage
+  2. Parallely Publish the data to BI
+
+### Batch Process
+  - Seperate Spark Processing to handle Batch data
+  - Medallion : 
+    - Bronze(Raw data)
+      - ```py writeStream
+        .format("parquet")
+        .outputMode('') : append, overwrite
+        .option("checkPointLocation", "")
+        .option("path", "")
+        .partitionBy("")
+        .start()
+        ```
+    - Silver(Cleaning)
+    - Gold (Aggregated)
+  - DLQ Analysis
+
