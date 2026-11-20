@@ -84,3 +84,21 @@ END FOR;
 
 
 ```
+
+```sql
+
+WITH LocationData AS (
+    SELECT 1 AS EmpId, 'Gaurav' AS Name, 'Pune' AS Location1, 'Bangalore' AS Location2, 'Hyderabad' AS Location3
+    UNION ALL
+    SELECT 2, 'Risabh', 'Mumbai', 'Bangalore', 'Pune'
+)
+SELECT EmpId, Name, 'Location1' AS LocationSequence, Location1 AS LocationName FROM LocationData
+UNION ALL
+SELECT EmpId, Name, 'Location2' AS LocationSequence, Location2 AS LocationName FROM LocationData
+UNION ALL
+SELECT EmpId, Name, 'Location3' AS LocationSequence, Location3 AS LocationName FROM LocationData
+ORDER BY EmpId, LocationSequence;
+
+
+```
+
