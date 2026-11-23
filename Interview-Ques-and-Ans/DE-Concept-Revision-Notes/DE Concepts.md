@@ -70,3 +70,9 @@
 - Space efficient, probabilistic data structure used to test whether an element belongs to a set.
 - Instead of storing actual data(like words, URLs, database keys etc), It uses a compact bit array and hash functions to save massive amount of memory.
 
+
+## SLA (Service Level Agreement)
+- Formal Commitment between data Team <-> Stakeholders
+- Expected quality, reliability, delivery of data product
+- Freshness (Timeliness), Completeness, Accuracy, Schema Stability, Recovery
+- 

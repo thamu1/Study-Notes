@@ -47,3 +47,41 @@ df = spark.read.format("jdbc") \
 - **Pre-Decompression Step:** For massive enterprise workflows, the best approach is to decouple decompression from your main Spark processing engine. Use a lightweight orchestration script (e.g., Airflow bash task or a simple Python script running `zipfile`) to unpack the files into an object store (S3/ADLS/GCS) as raw text or CSV before Spark starts its job.
 - **Avoid Nested Zips:** Never process zip files containing thousands of small nested files inside Spark. It balloons driver metadata memory, leading to an immediate **Driver OOM (Out of Memory)** error.
 - **Native Splittable Alternatives:** If you control the upstream data generation, immediately migrate away from `.zip` to **Snappy-compressed Parquet** or **Gzip-compressed text files (`.gz`)** combined with an architecture that writes multiple smaller files instead of one monolith.
+
+
+# Spark Code Samples:
+
+```py
+
+read a JSON file with explicit schema + multi-line JSON.
+
+explicit_schema = StructType([
+    StructField("id", IntegerType(), True),
+    StructField("name", StringType(), True),
+    StructField("city", StringType(), True)
+])
+
+spark.read.schema(explicit_schema).option('multiline', "true").json('path')
+
+```
+
+```py
+
+3.Given a nested JSON dataset, flatten it into a flat schema using Spark SQL functions such as explode and column dot-notation.
+
+nested_json_data = [{
+    "company": "TechCorp",
+    "location": {"city": "San Francisco", "state": "CA"},
+    "employees": [
+        {"name": "Alice", "skills": ["Python", "Spark"]},
+        {"name": "Bob", "skills": ["Java", "Scala"]}
+    ]
+}]
+
+
+df = spark.createDataFrame(nested_json_data)
+
+df2 = df.selectExpr("company", "location.city", "location.state", explode("employee").alias("emp"))
+df2.selectExpr("company", "city", "state", "emp.name", "explode(emp.skills)")
+
+```
